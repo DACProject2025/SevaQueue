@@ -15,10 +15,10 @@ public class Office {
 	@Column(name = "office_id")
     private Long id;
 	
-	@Column(name = "office_name" , nullable = false, length = 75)
+	@Column(name = "office_name" , nullable = false, length = 100)
 	private String name;
 	
-	@Column(name = "address", nullable = false, length = 120)
+	@Column(name = "address", nullable = false, length = 150)
 	private String address;
 	
 	@Column(name = "city", nullable = false, length = 40)

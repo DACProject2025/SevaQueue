@@ -21,9 +21,6 @@ public class Service {
 	@Column(name="service_name", nullable = false, length = 75)
 	private String name;
 	
-	@Column(name="description", nullable = false, length = 500)
-	private String desc;
-	
 	@ManyToOne
 	@JoinColumn(name="office_id", nullable=false)
 	private Office office;

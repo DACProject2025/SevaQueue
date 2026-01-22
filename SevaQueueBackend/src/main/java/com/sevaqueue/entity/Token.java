@@ -1,8 +1,8 @@
 package com.sevaqueue.entity;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,11 +13,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "token")
+@Table(name = "tokens")
 public class Token {
 	
 	@Id
@@ -28,26 +27,17 @@ public class Token {
 	@Column(name = "token_number", nullable = false)
 	private int tno;
 	
-	@Column(name = "date", nullable = false)
-	private LocalDate date;
-	
-	@Column(name = "time_slot", nullable = false)
-	private LocalTime timeSlot;
+	@CreationTimestamp
+	@Column(name = "created_at", nullable = false, updatable = false)
+	private LocalDateTime createdAt;
 	
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
 	private TokenStatus status = TokenStatus.WAITING;
 	
-	@Column(name = "issue_time", nullable = false, insertable = false, updatable = false)
-	private LocalDateTime issueTime;
-	
-	@OneToMany
+	@ManyToOne
 	@JoinColumn(name = "user_id", nullable = false)
 	private User uid;
-	
-	@ManyToOne
-	@JoinColumn(name = "office_id", nullable = false)
-	private Office oid;
 	
 	@ManyToOne
 	@JoinColumn(name = "service_id", nullable = false)

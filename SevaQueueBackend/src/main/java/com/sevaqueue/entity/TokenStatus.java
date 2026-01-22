@@ -1,5 +1,5 @@
 package com.sevaqueue.entity;
 
 public enum TokenStatus {
-	WAITING, CALLED, COMPLETED, CANCELLED
+	WAITING, CALLED, SERVED, MISSED
 }

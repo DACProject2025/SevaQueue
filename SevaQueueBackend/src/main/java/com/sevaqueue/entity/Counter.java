@@ -18,14 +18,14 @@ public class Counter {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@Column(name = "counter_name", nullable = false, length = 50)
-	private String name;
+	@Column(name = "counter_number", nullable = false)
+	private int number;
 	
 	@ManyToOne
-	@JoinColumn(name = "office_id", nullable = false)
-	private Office oid;
+	@JoinColumn(name = "staff_id", nullable = false)
+	private Office staffId;
 	
 	@ManyToOne
 	@JoinColumn(name = "service_id", nullable = false)
-	private Service sid;
+	private Service serviceId;
 }
