@@ -22,10 +22,10 @@ public class Counter {
 	private int number;
 	
 	@ManyToOne
-	@JoinColumn(name = "staff_id", nullable = false)
-	private Office staffId;
+	@JoinColumn(name = "office_id", nullable = false)
+	private Office office;
 	
 	@ManyToOne
 	@JoinColumn(name = "service_id", nullable = false)
-	private Service serviceId;
+	private Service service;
 }

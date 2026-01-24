@@ -14,9 +14,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.Setter;
 
 @Entity
 @Table(name = "tokens")
+@Setter
 public class Token {
 	
 	@Id
@@ -25,7 +27,7 @@ public class Token {
 	private Long id;
 	
 	@Column(name = "token_number", nullable = false)
-	private int tno;
+	private int tokenNumber;
 	
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false, updatable = false)
@@ -37,9 +39,9 @@ public class Token {
 	
 	@ManyToOne
 	@JoinColumn(name = "user_id", nullable = false)
-	private User uid;
+	private User user;
 	
 	@ManyToOne
 	@JoinColumn(name = "service_id", nullable = false)
-	private Service sid;
+	private Service service;
 }
