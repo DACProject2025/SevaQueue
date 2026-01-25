@@ -12,12 +12,8 @@ import com.sevaqueue.entity.User;
 import com.sevaqueue.service.TokenServiceImpl;
 
 @RestController
-<<<<<<< HEAD
 @RequestMapping("api/tokens")
 public class TokenController {
-=======
-public class TokenController {	
->>>>>>> 48004d787c36e980746bf36827f47403342b9434
 	
 	@Autowired
 	private TokenServiceImpl tokenService;

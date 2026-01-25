@@ -48,7 +48,7 @@ public class Token {
 	
 	@ManyToOne
 	@JoinColumn(name = "service_id", nullable = false)
-	private Service service;
+	private OfficeService service;
 
 	public void setCounter(Counter counter) {
 		// TODO Auto-generated method stub

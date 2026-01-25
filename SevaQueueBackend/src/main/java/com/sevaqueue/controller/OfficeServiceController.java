@@ -8,22 +8,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sevaqueue.entity.Service;
-import com.sevaqueue.service.ServiceService;
+import com.sevaqueue.entity.OfficeService;
+import com.sevaqueue.service.OfficeServiceService;
 
 @RestController
 @RequestMapping("/api/services")
-public class ServiceController {
+public class OfficeServiceController {
 	
 	@Autowired
-	private ServiceService serviceService;
+	private OfficeServiceService serviceService;
 	
 	@PostMapping
-	public ResponseEntity<Service> createService(
+	public ResponseEntity<OfficeService> createService(
 			@RequestParam Long officeId,
-			@RequestBody Service service ) {
+			@RequestBody OfficeService service ) {
 		
-		Service newService = serviceService.createService(officeId, service);
+		OfficeService newService = serviceService.createService(officeId, service);
 		
 		return ResponseEntity.ok(newService);
 		

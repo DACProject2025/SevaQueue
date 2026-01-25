@@ -5,10 +5,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.sevaqueue.entity.Counter;
 import com.sevaqueue.entity.Role;
-import com.sevaqueue.entity.Service;
+import com.sevaqueue.entity.OfficeService;
 import com.sevaqueue.entity.User;
+import com.sevaqueue.exception.ResourceNotFoundException;
 import com.sevaqueue.repository.CounterRepository;
-import com.sevaqueue.repository.ServiceRepository;
+import com.sevaqueue.repository.OfficeServiceRepository;
 import com.sevaqueue.repository.UserRepository;
 
 
@@ -20,7 +21,7 @@ public class CounterServiceImpl implements CounterService {
 	private CounterRepository counterRepo;
 	
 	@Autowired
-	private ServiceRepository serviceRepo;
+	private OfficeServiceRepository serviceRepo;
 	
 	@Autowired
 	private UserRepository userRepo;
@@ -28,14 +29,14 @@ public class CounterServiceImpl implements CounterService {
 	@Override
 	public Counter assignCounter(Long serviceId, Long staffId, Integer counterNumber) {
 
-		Service service = serviceRepo.findById(serviceId)
-				.orElseThrow(() -> new RuntimeException("Service not found!"));
+		OfficeService service = serviceRepo.findById(serviceId)
+				.orElseThrow(() -> new ResourceNotFoundException("Service not found!"));
 		
 		User staff = userRepo.findById(staffId)
-				.orElseThrow(() -> new RuntimeException("Staff not found!"));
+				.orElseThrow(() -> new ResourceNotFoundException("Staff not found!"));
 		
 		if(staff.getRole() != Role.STAFF) {
-			throw new RuntimeException("User is not staff!");
+			throw new ResourceNotFoundException("User is not staff!");
 		}
 		
 		Counter counter = new Counter();

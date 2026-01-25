@@ -9,11 +9,12 @@
 		<version>3.5.7</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.cdac</groupId>
-	<artifactId>springboot_backend_template</artifactId>
+	<groupId>com.sevaqueue</groupId>
+	<artifactId>sevaqueue-backend</artifactId>
 	<version>0.0.1</version>
-	<name>springboot_backend_template</name>
-	<description>Spring Boot Backend Template for Adv Java Lab Exam</description>
+	<name>SevaQueue Backend Service</name>
+	<description>SevaQueue is a digital token and queue management backend system
+for government offices, built using Spring Boot and MySQL.</description>
 	<url />
 	<licenses>
 		<license />
