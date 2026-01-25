@@ -23,24 +23,24 @@ public class OfficeController {
 		private OfficeService officeService;
 		
 		
-		@PostMapping
+		@PostMapping("/create")
 		public ResponseEntity<Office> createOffice(@RequestBody Office office) {
 			return ResponseEntity.ok(officeService.createOffice(office));
 		}
 		
-		@GetMapping
+		@GetMapping("/getAll")
 		public ResponseEntity<List<Office>> getAllOffices() {
 			return ResponseEntity.ok(officeService.getAllOffices());
 		}
 		
-		@GetMapping("/{id}")
+		@GetMapping("/get/{id}")
 		public ResponseEntity<Office> getOfficeById(@PathVariable Long id){
 			return ResponseEntity.ok(officeService.getOfficeById(id));
 		}
 		
-		@GetMapping("/{officeId}/counter-count")
+		@GetMapping("/getcount/{officeId}/counter-count")
 		public ResponseEntity<Long> getCounterCount(@PathVariable Long officeId){
-			return ResponseEntity.ok(officeService.getCounterCountByoffice(officeId));
+			return ResponseEntity.ok(officeService.getCounterCountByOffice(officeId));
 		}
 	
 }

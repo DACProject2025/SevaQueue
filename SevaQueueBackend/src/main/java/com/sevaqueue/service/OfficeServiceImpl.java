@@ -2,6 +2,7 @@ package com.sevaqueue.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sevaqueue.entity.Office;
@@ -11,8 +12,10 @@ import com.sevaqueue.repository.OfficeRepository;
 @Service
 public class OfficeServiceImpl implements OfficeService {
 	
+	@Autowired
 	private OfficeRepository officeRepo;
 	
+	@Autowired
 	private CounterRepository counterRepo;
 
 	@Override
@@ -33,7 +36,7 @@ public class OfficeServiceImpl implements OfficeService {
 	}
 
 	@Override
-	public long getCounterCountByoffice(Long officeId) {
+	public long getCounterCountByOffice(Long officeId) {
 	
 		return counterRepo.countCountersByOfficeId(officeId);
 	}

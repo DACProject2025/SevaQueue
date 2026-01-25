@@ -12,6 +12,6 @@ public interface OfficeService {
 	
 	Office getOfficeById(Long id);
 	
-	long getCounterCountByoffice(Long officeId);
+	long getCounterCountByOffice(Long officeId);
 	
 }
