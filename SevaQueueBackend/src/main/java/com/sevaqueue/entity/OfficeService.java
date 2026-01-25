@@ -25,7 +25,7 @@ public class OfficeService {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="service_id")
-	private Long id;
+	private Long serviceId;
 	
 	@Column(name="service_name", nullable = false, length = 75)
 	private String name;

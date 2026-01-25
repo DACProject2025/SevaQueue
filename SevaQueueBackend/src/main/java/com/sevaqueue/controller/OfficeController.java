@@ -16,7 +16,7 @@ import com.sevaqueue.service.OfficeService;
 
 
 @RestController
-@RequestMapping("/Office")
+@RequestMapping("/api/offices")
 public class OfficeController {
   
 		@Autowired
@@ -33,9 +33,9 @@ public class OfficeController {
 			return ResponseEntity.ok(officeService.getAllOffices());
 		}
 		
-		@GetMapping("/{id}")
-		public ResponseEntity<Office> getOfficeById(@PathVariable Long id){
-			return ResponseEntity.ok(officeService.getOfficeById(id));
+		@GetMapping("/{officeId}")
+		public ResponseEntity<Office> getOfficeById(@PathVariable Long officeId){
+			return ResponseEntity.ok(officeService.getOfficeById(officeId));
 		}
 		
 		@GetMapping("/{officeId}/counter-count")

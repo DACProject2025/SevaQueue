@@ -13,9 +13,9 @@ import com.sevaqueue.entity.Counter;
 
 public interface CounterRepository extends JpaRepository<Counter, Long> {
 
-    List<Counter> findByServiceId(Long serviceId);
+    List<Counter> findByServiceServiceId(Long serviceId);
 
-    List<Counter> findByServiceIdAndStatus(Long serviceId, CounterStatus status);
+    List<Counter> findByServiceServiceIdAndStatus(Long serviceId, CounterStatus status);
     
     @Query("""
             SELECT COUNT(c)

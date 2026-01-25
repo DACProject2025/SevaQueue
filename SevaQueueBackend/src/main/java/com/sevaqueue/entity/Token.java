@@ -22,7 +22,6 @@ import lombok.Setter;
 @Getter
 @Entity
 @Table(name = "tokens")
-
 public class Token {
 	
 	@Id
@@ -50,8 +49,4 @@ public class Token {
 	@JoinColumn(name = "service_id", nullable = false)
 	private OfficeService service;
 
-	public void setCounter(Counter counter) {
-		// TODO Auto-generated method stub
-		
-	}
 }
