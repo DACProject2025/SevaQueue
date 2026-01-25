@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.sevaqueue.entity.Token;
-import com.sevaqueue.entity.TokenStatus;
 
 @Repository
 public interface TokenRepository extends JpaRepository<Token, Long> {
