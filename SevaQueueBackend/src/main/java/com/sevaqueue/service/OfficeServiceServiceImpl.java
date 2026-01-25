@@ -1,6 +1,9 @@
 package com.sevaqueue.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sevaqueue.entity.Office;
@@ -11,8 +14,7 @@ import com.sevaqueue.repository.OfficeServiceRepository;
 
 
 
-@org.springframework.stereotype.Service
-@Transactional
+@Service
 public class OfficeServiceServiceImpl implements OfficeServiceService {
 
 	@Autowired
@@ -22,6 +24,7 @@ public class OfficeServiceServiceImpl implements OfficeServiceService {
 	private OfficeRepository officeRepo;
 	
 	@Override
+	@Transactional
 	public OfficeService createService(Long officeId, OfficeService service) {
 		
 		Office office = officeRepo.findById(officeId)
@@ -29,6 +32,13 @@ public class OfficeServiceServiceImpl implements OfficeServiceService {
 		
 		service.setOffice(office);
 		return serviceRepo.save(service);
+		
+	}
+
+	@Override
+	public List<OfficeService> getServiceByOffice(Long officeId) {
+		
+		return serviceRepo.findByOfficeOfficeId(officeId);
 	}
 
 }
