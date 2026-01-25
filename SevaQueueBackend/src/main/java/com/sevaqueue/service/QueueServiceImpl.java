@@ -1,8 +1,7 @@
 package com.sevaqueue.service;
 
 import org.springframework.stereotype.Service;
-
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional

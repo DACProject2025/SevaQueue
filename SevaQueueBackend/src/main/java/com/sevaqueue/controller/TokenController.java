@@ -3,6 +3,7 @@ package com.sevaqueue.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,12 +12,17 @@ import com.sevaqueue.entity.User;
 import com.sevaqueue.service.TokenServiceImpl;
 
 @RestController
+<<<<<<< HEAD
+@RequestMapping("api/tokens")
 public class TokenController {
+=======
+public class TokenController {	
+>>>>>>> 48004d787c36e980746bf36827f47403342b9434
 	
 	@Autowired
 	private TokenServiceImpl tokenService;
 	
-	@PostMapping
+	@PostMapping("/generate-token")
 	public ResponseEntity<Token> generateToken(@RequestParam Long serviceId, User user) {
 		return ResponseEntity.ok(tokenService.generateToken(serviceId, user));
 	}
