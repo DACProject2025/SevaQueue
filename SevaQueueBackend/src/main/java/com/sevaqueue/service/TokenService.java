@@ -8,7 +8,7 @@ import com.sevaqueue.entity.User;
 @Service
 public interface TokenService {
 
-	public Token generateToken(Long serviceId, User user);
+	public Token generateToken(Long serviceId, User userId);
 	
 	public Token callNextToken(Long serviceId);
 	

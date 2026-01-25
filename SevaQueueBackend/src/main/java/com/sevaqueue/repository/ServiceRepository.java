@@ -8,4 +8,5 @@ import com.sevaqueue.entity.Service;
 @Repository
 public interface ServiceRepository extends JpaRepository<Service, Long> {
 
+	
 }

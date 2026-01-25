@@ -11,12 +11,12 @@ import com.sevaqueue.entity.User;
 import com.sevaqueue.service.TokenServiceImpl;
 
 @RestController
-public class TokenController {
+public class TokenController {	
 	
 	@Autowired
 	private TokenServiceImpl tokenService;
 	
-	@PostMapping
+	@PostMapping("/generate-token")
 	public ResponseEntity<Token> generateToken(@RequestParam Long serviceId, User user) {
 		return ResponseEntity.ok(tokenService.generateToken(serviceId, user));
 	}

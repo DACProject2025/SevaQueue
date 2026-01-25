@@ -4,26 +4,32 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.sevaqueue.entity.Token;
+import com.sevaqueue.entity.TokenStatus;
 
 @Repository
 public interface TokenRepository extends JpaRepository<Token, Long> {
-	
-	@Query("""
-			SELECT t FROM Token t 
-			WHERE t.service.id = :serviceId
-			AND t.status = 'WAITING'
-			ORDER BY t.createdAt ASC
-			""")
-	List<Token> findWaitingTokens(Long serviceId);
-	
-	@Query("""
-			SELECT COALESCE(MAX(t.tokenNumber), 0)
-			FROM Token t
-			WHERE t.service.id = :serviceId
-			AND DATE(t.createdAt) = CURRENT_DATE 
-			""")
-	int findLastTokenNumber(Long serviceId);
+
+    // 1️⃣ Get waiting tokens for a service (queue order)
+    @Query("""
+        SELECT t FROM Token t
+        WHERE t.service.id = :serviceId
+          AND t.status = 'WAITING'
+        ORDER BY t.createdAt ASC
+    """)
+    List<Token> findWaitingTokensByService(@Param("serviceId") Long serviceId);
+
+    // 2️⃣ Get last token number for a service (daily reset)
+    @Query("""
+        SELECT COALESCE(MAX(t.tokenNumber), 0)
+        FROM Token t
+        WHERE t.service.id = :serviceId
+          AND t.createdAt >= CURRENT_DATE
+    """)
+    int findLastTokenNumber(@Param("serviceId") Long serviceId);
+
+
 }
