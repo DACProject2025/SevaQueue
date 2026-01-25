@@ -6,11 +6,13 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.sevaqueue.entity.Service;
+import com.sevaqueue.entity.OfficeService;
 import com.sevaqueue.entity.Token;
 import com.sevaqueue.entity.TokenStatus;
 import com.sevaqueue.entity.User;
-import com.sevaqueue.repository.ServiceRepository;
+import com.sevaqueue.exception.QueueEmptyException;
+import com.sevaqueue.exception.ResourceNotFoundException;
+import com.sevaqueue.repository.OfficeServiceRepository;
 import com.sevaqueue.repository.TokenRepository;
 import com.sevaqueue.repository.UserRepository;
 
@@ -22,7 +24,7 @@ public class TokenServiceImpl implements TokenService {
     private TokenRepository tokenRepo;
 
     @Autowired
-    private ServiceRepository serviceRepo;
+    private OfficeServiceRepository serviceRepo;
     
     @Autowired
     private UserRepository userRepo;
@@ -31,8 +33,8 @@ public class TokenServiceImpl implements TokenService {
     @Override
     public Token generateToken(Long serviceId, User user) {
 
-        Service service = serviceRepo.findById(serviceId)
-                .orElseThrow(() -> new RuntimeException("Service not found"));
+        OfficeService service = serviceRepo.findById(serviceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
 
         int lastTokenNumber = tokenRepo.findLastTokenNumber(serviceId);
 
@@ -52,15 +54,15 @@ public class TokenServiceImpl implements TokenService {
     public Token callNextToken(Long serviceId) {
 
         // check service exists
-        Service service = serviceRepo.findById(serviceId)
-                .orElseThrow(() -> new RuntimeException("Service not found"));
+        OfficeService service = serviceRepo.findById(serviceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
 
         // get waiting tokens for this service
         List<Token> waitingTokens =
                 tokenRepo.findWaitingTokensByService(serviceId);
 
         if (waitingTokens.isEmpty()) {
-            throw new RuntimeException("No tokens in queue");
+            throw new QueueEmptyException("No tokens in queue");
         }
 
         // take first token

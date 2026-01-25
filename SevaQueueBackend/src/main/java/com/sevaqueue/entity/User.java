@@ -12,8 +12,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
 @Table(name="users")
 public class User {
 	
@@ -24,7 +28,7 @@ public class User {
 	@Column(name = "uname", nullable = false, length = 100)
 	private String name;
 	
-	@Column(name = "email", nullable = false, length = 60)
+	@Column(name = "email", unique = true, nullable = false, length = 60)
 	private String email;
 
 	@Column(name = "password", nullable = false, length = 255)
