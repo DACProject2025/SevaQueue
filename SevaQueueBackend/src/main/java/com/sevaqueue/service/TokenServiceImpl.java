@@ -3,6 +3,7 @@ package com.sevaqueue.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.sevaqueue.entity.Service;
 import com.sevaqueue.entity.Token;
@@ -10,8 +11,6 @@ import com.sevaqueue.entity.TokenStatus;
 import com.sevaqueue.entity.User;
 import com.sevaqueue.repository.ServiceRepository;
 import com.sevaqueue.repository.TokenRepository;
-
-import jakarta.transaction.Transactional;
 
 @org.springframework.stereotype.Service
 @Transactional
