@@ -8,25 +8,19 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-<<<<<<< HEAD
-import lombok.Getter;
-=======
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
->>>>>>> 48004d787c36e980746bf36827f47403342b9434
 import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
 @Setter
-<<<<<<< HEAD
-=======
 @NoArgsConstructor
 @AllArgsConstructor
->>>>>>> 48004d787c36e980746bf36827f47403342b9434
 @Table(name="service")
-public class Service {
+public class OfficeService {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
