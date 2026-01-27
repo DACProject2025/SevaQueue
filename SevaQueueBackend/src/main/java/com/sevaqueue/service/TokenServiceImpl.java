@@ -1,6 +1,5 @@
 package com.sevaqueue.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,12 +7,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sevaqueue.dto.QueueStatusDto;
+import com.sevaqueue.entity.Counter;
+import com.sevaqueue.entity.CounterStatus;
 import com.sevaqueue.entity.OfficeService;
 import com.sevaqueue.entity.Token;
 import com.sevaqueue.entity.TokenStatus;
 import com.sevaqueue.entity.User;
 import com.sevaqueue.exception.QueueEmptyException;
 import com.sevaqueue.exception.ResourceNotFoundException;
+import com.sevaqueue.repository.CounterRepository;
 import com.sevaqueue.repository.OfficeServiceRepository;
 import com.sevaqueue.repository.TokenRepository;
 
@@ -22,6 +24,9 @@ public class TokenServiceImpl implements TokenService {
 
     @Autowired
     private TokenRepository tokenRepo;
+    
+    @Autowired
+    private CounterRepository counterRepo;
 
     @Autowired
     private OfficeServiceRepository serviceRepo;
@@ -34,6 +39,10 @@ public class TokenServiceImpl implements TokenService {
         OfficeService service = serviceRepo.findById(serviceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
 
+        if(!service.isActive()) {
+        	throw new IllegalStateException("Service is inactive!");
+        }
+        
         int lastTokenNumber = tokenRepo.findLastTokenNumber(serviceId);
 
         Token token = new Token();
@@ -47,8 +56,15 @@ public class TokenServiceImpl implements TokenService {
 
     @Override
     @Transactional
-    public Token callNextToken(Long serviceId) {
+    public Token callNextToken(Long serviceId, Long counterId) {
 
+    	Counter counter = counterRepo.findById(counterId)
+    			.orElseThrow(() -> new ResourceNotFoundException("Counter not found!"));
+    	
+    	if(counter.getStatus() == CounterStatus.CLOSED) {
+    		throw new IllegalStateException("Counter is Closed!");
+    	}
+    	
         // check service exists
         OfficeService service = serviceRepo.findById(serviceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Service not found"));

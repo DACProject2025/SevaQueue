@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sevaqueue.entity.Counter;
+import com.sevaqueue.entity.CounterStatus;
 import com.sevaqueue.entity.Role;
 import com.sevaqueue.entity.OfficeService;
 import com.sevaqueue.entity.User;
@@ -54,6 +55,17 @@ public class CounterServiceImpl implements CounterService {
 	public List<Counter> getCountersByService(Long serviceId) {
 		
 		return counterRepo.findByServiceServiceId(serviceId);
+	}
+
+	@Override
+	@Transactional
+	public Counter updateCounterStatus(Long counterId, CounterStatus status) {
+		
+		Counter counter = counterRepo.findById(counterId)
+				.orElseThrow(() -> new ResourceNotFoundException("Counter not found!"));
+		
+		counter.setStatus(status);
+		return counterRepo.save(counter);
 	}
 
 }

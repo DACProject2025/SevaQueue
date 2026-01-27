@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,8 +24,8 @@ public class OfficeServiceController {
 	private OfficeServiceService serviceService;
 	
 	@GetMapping("/office/{officeId}")
-	public List<OfficeService> getServicesByOffice(@PathVariable Long officeId) {
-		return serviceService.getServiceByOffice(officeId);
+	public ResponseEntity<List<OfficeService>> getServicesByOffice(@PathVariable Long officeId) {
+		return ResponseEntity.ok(serviceService.getServiceByOffice(officeId));
 	}
 	
 	@PostMapping
@@ -35,6 +36,13 @@ public class OfficeServiceController {
 		OfficeService newService = serviceService.createService(officeId, service);
 		
 		return ResponseEntity.ok(newService);
+		
+	}
+	
+	@PutMapping("/{serviceId}/deactivate")
+	public ResponseEntity<OfficeService> deactivateService(@PathVariable Long serviceId) {
+		
+		return ResponseEntity.ok(serviceService.deactivateService(serviceId));
 		
 	}
 		

@@ -14,7 +14,7 @@ public interface TokenService {
 
 	public Token generateToken(Long serviceId, User userId);
 	
-	public Token callNextToken(Long serviceId);
+	public Token callNextToken(Long serviceId,  Long counterId);
 
 	public List<Token> getTokenByUser(User user);
 

@@ -30,8 +30,8 @@ public class TokenController {
 	}
 	
 	@PostMapping("/call-next")
-	public ResponseEntity<Token> callNext(@RequestParam Long serviceId) {
-		return ResponseEntity.ok(tokenService.callNextToken(serviceId));
+	public ResponseEntity<Token> callNext(@RequestParam Long serviceId, @RequestParam Long counterId) {
+		return ResponseEntity.ok(tokenService.callNextToken(serviceId, counterId));
 	}
 	
 	@GetMapping("/my-tokens")

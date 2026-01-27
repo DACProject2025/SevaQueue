@@ -10,14 +10,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Entity
 @Getter
 @Setter
-@Entity
-@Table(name = "counter")
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "counters")
 public class Counter {
 
     @Id
@@ -30,7 +33,7 @@ public class Counter {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private CounterStatus status;   // OPEN / CLOSED
+    private CounterStatus status = CounterStatus.OPEN;   // OPEN / CLOSED
 
 
     @ManyToOne

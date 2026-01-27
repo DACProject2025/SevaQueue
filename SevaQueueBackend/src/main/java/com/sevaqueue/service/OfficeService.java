@@ -13,5 +13,7 @@ public interface OfficeService {
 	Office getOfficeById(Long id);
 	
 	long getCounterCountByoffice(Long officeId);
+
+	Office deactivateOffice(Long officeId);
 	
 }

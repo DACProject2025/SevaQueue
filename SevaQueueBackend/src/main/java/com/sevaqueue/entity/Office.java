@@ -7,16 +7,27 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "offices")
 public class Office {
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "office_id")
     private Long officeId;
 	
 	@Column(name = "office_name" , nullable = false, length = 100)
-	private String name;
+	private String officeName;
 	
 	@Column(name = "address", nullable = false, length = 150)
 	private String address;
@@ -32,5 +43,8 @@ public class Office {
 	
 	@Column(name = "closing_time", nullable = false)
 	private LocalTime closeTime;
+	
+	@Column(nullable = false)
+	private boolean active = true;
 	
 }
