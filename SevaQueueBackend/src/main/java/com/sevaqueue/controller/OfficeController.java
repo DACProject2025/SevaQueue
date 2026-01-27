@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,6 +42,13 @@ public class OfficeController {
 		@GetMapping("/{officeId}/counter-count")
 		public ResponseEntity<Long> getCounterCount(@PathVariable Long officeId){
 			return ResponseEntity.ok(officeService.getCounterCountByoffice(officeId));
+		}
+		
+		@PutMapping("/{officeId}/deactivate")
+		public ResponseEntity<Office> deactivateOffice(@PathVariable Long officeId) {
+			
+			return ResponseEntity.ok(officeService.deactivateOffice(officeId));
+					
 		}
 	
 }

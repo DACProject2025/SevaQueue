@@ -18,9 +18,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 
-@Setter
-@Getter
 @Entity
+@Getter
+@Setter
 @Table(name = "tokens")
 public class Token {
 	

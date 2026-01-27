@@ -38,7 +38,20 @@ public class OfficeServiceServiceImpl implements OfficeServiceService {
 	@Override
 	public List<OfficeService> getServiceByOffice(Long officeId) {
 		
-		return serviceRepo.findByOfficeOfficeId(officeId);
+		return serviceRepo.findByOfficeOfficeIdAndActiveTrue(officeId);
+	
+	}
+	
+	@Override
+	@Transactional
+	public OfficeService deactivateService(Long serviceId) {
+		
+		OfficeService service = serviceRepo.findById(serviceId)
+				.orElseThrow(() -> new ResourceNotFoundException("Service not found!"));
+		
+		service.setActive(false);
+		return serviceRepo.save(service);
+		
 	}
 
 }

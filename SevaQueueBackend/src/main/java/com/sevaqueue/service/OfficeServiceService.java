@@ -9,5 +9,7 @@ public interface OfficeServiceService {
 	OfficeService createService(Long officeId, OfficeService service);
 
 	List<OfficeService> getServiceByOffice(Long officeId);
+
+	OfficeService deactivateService(Long serviceId);
 	
 }
