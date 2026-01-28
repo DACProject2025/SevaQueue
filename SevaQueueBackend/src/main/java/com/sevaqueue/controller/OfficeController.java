@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sevaqueue.entity.Office;
+import com.sevaqueue.dto.ApiResponseDto;
+import com.sevaqueue.dto.OfficeRequestDto;
+import com.sevaqueue.dto.OfficeResponseDto;
 import com.sevaqueue.service.OfficeService;
 
 
@@ -25,17 +27,17 @@ public class OfficeController {
 		
 		
 		@PostMapping
-		public ResponseEntity<Office> createOffice(@RequestBody Office office) {
-			return ResponseEntity.ok(officeService.createOffice(office));
+		public ResponseEntity<OfficeResponseDto> createOffice(@RequestBody OfficeRequestDto dto) {
+			return ResponseEntity.ok(officeService.createOffice(dto));
 		}
 		
 		@GetMapping
-		public ResponseEntity<List<Office>> getAllOffices() {
+		public ResponseEntity<List<OfficeResponseDto>> getAllOffices() {
 			return ResponseEntity.ok(officeService.getAllOffices());
 		}
 		
 		@GetMapping("/{officeId}")
-		public ResponseEntity<Office> getOfficeById(@PathVariable Long officeId){
+		public ResponseEntity<OfficeResponseDto> getOfficeById(@PathVariable Long officeId){
 			return ResponseEntity.ok(officeService.getOfficeById(officeId));
 		}
 		
@@ -45,7 +47,7 @@ public class OfficeController {
 		}
 		
 		@PutMapping("/{officeId}/deactivate")
-		public ResponseEntity<Office> deactivateOffice(@PathVariable Long officeId) {
+		public ResponseEntity<ApiResponseDto> deactivateOffice(@PathVariable Long officeId) {
 			
 			return ResponseEntity.ok(officeService.deactivateOffice(officeId));
 					

@@ -2,9 +2,13 @@ package com.sevaqueue.service;
 
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.sevaqueue.dto.ApiResponseDto;
+import com.sevaqueue.dto.OfficeRequestDto;
+import com.sevaqueue.dto.OfficeResponseDto;
 import com.sevaqueue.entity.Office;
 import com.sevaqueue.exception.ResourceNotFoundException;
 import com.sevaqueue.repository.CounterRepository;
@@ -16,26 +20,33 @@ public class OfficeServiceImpl implements OfficeService {
 	@Autowired
 	private OfficeRepository officeRepo;
 	
+	private ModelMapper modelMapper;
+
+	
 	@Autowired
 	private CounterRepository counterRepo;
 
 	@Override
-	public Office createOffice(Office office) {
+	public OfficeResponseDto createOffice(OfficeRequestDto office) {
 	
-		return officeRepo.save(office);
+		return modelMapper.map(officeRepo.save(modelMapper.map(office, Office.class)), OfficeResponseDto.class);
 	}
 
 	@Override
-	public List<Office> getAllOffices() {
+	public List<OfficeResponseDto> getAllOffices() {
 		
-		return officeRepo.findByActiveTrue();
+		return officeRepo.findByActiveTrue()
+				.stream()
+				.map(office -> modelMapper.map(office, OfficeResponseDto.class))
+				.toList();
 		
 	}
 
 	@Override
-	public Office getOfficeById(Long id) {
+	public OfficeResponseDto getOfficeById(Long id) {
 		
-		return officeRepo.findById(id).orElseThrow(()-> new RuntimeException("office not found"));
+		Office office = officeRepo.findById(id).orElseThrow(()-> new RuntimeException("office not found"));
+		return modelMapper.map(office, OfficeResponseDto.class);
 	
 	}
 
@@ -47,13 +58,14 @@ public class OfficeServiceImpl implements OfficeService {
 	}
 
 	@Override
-	public Office deactivateOffice(Long officeId) {
+	public ApiResponseDto deactivateOffice(Long officeId) {
 
 		Office office = officeRepo.findById(officeId)
 				.orElseThrow(() -> new ResourceNotFoundException("Office not found!"));
 		
 		office.setActive(false);
-		return officeRepo.save(office);
+		officeRepo.save(office);
+		return new ApiResponseDto("Counter status updated", true);
 		
 	}
 	

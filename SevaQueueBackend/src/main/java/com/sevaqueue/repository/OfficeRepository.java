@@ -5,13 +5,14 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.sevaqueue.dto.OfficeResponseDto;
 import com.sevaqueue.entity.Office;
 import com.sevaqueue.entity.OfficeService;
 
 @Repository
 public interface OfficeRepository extends JpaRepository<Office, Long> {
 	
-	List<Office> findByActiveTrue();
+	List<OfficeResponseDto> findByActiveTrue();
 	
 	List<OfficeService> findByOfficeId(Long officeId);
 

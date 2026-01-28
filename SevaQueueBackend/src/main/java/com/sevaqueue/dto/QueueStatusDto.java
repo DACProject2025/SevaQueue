@@ -11,8 +11,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class QueueStatusDto {
 	
-	private int current;
+	private int currentToken;
 	private int myToken;
 	private int tokensAhead;
+	private int estimatedWaitTime; // minutes
 	
 }
