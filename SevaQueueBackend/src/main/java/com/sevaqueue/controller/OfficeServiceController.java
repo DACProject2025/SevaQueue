@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sevaqueue.entity.OfficeService;
+import com.sevaqueue.dto.ApiResponseDto;
+import com.sevaqueue.dto.ServiceRequestDto;
+import com.sevaqueue.dto.ServiceResponseDto;
 import com.sevaqueue.service.OfficeServiceService;
 
 @RestController
@@ -24,23 +26,23 @@ public class OfficeServiceController {
 	private OfficeServiceService serviceService;
 	
 	@GetMapping("/office/{officeId}")
-	public ResponseEntity<List<OfficeService>> getServicesByOffice(@PathVariable Long officeId) {
+	public ResponseEntity<List<ServiceResponseDto>> getServicesByOffice(@PathVariable Long officeId) {
 		return ResponseEntity.ok(serviceService.getServiceByOffice(officeId));
 	}
 	
 	@PostMapping
-	public ResponseEntity<OfficeService> createService(
+	public ResponseEntity<ServiceResponseDto> createService(
 			@RequestParam Long officeId,
-			@RequestBody OfficeService service ) {
+			@RequestBody ServiceRequestDto service ) {
 		
-		OfficeService newService = serviceService.createService(officeId, service);
+		ServiceResponseDto newService = serviceService.createService(officeId, service);
 		
 		return ResponseEntity.ok(newService);
 		
 	}
 	
 	@PutMapping("/{serviceId}/deactivate")
-	public ResponseEntity<OfficeService> deactivateService(@PathVariable Long serviceId) {
+	public ResponseEntity<ApiResponseDto> deactivateService(@PathVariable Long serviceId) {
 		
 		return ResponseEntity.ok(serviceService.deactivateService(serviceId));
 		

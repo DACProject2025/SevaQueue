@@ -53,5 +53,13 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
 	
 	List<Token> findByServiceServiceIdOrderByCreatedAt(Long serviceId);
 
+	@Query("""
+			SELECT COUNT(t)
+			FROM Token t
+			WHERE t.service.serviceId = :serviceId
+			AND DATE(t.createdAt) = CURRENT_DATE
+			""")
+	int countTodayTokens(Long serviceId);
+
 
 }

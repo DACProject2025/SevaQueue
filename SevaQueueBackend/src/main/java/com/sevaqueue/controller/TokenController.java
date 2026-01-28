@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sevaqueue.entity.Token;
+import com.sevaqueue.dto.TokenResponseDto;
 import com.sevaqueue.entity.TokenStatus;
 import com.sevaqueue.entity.User;
 import com.sevaqueue.service.TokenService;
@@ -25,17 +25,17 @@ public class TokenController {
 	private TokenService tokenService;
 	
 	@PostMapping("/generate-token")
-	public ResponseEntity<Token> generateToken(@RequestParam Long serviceId, User user) {
+	public ResponseEntity<TokenResponseDto> generateToken(@RequestParam Long serviceId, User user) {
 		return ResponseEntity.ok(tokenService.generateToken(serviceId, user));
 	}
 	
 	@PostMapping("/call-next")
-	public ResponseEntity<Token> callNext(@RequestParam Long serviceId, @RequestParam Long counterId) {
+	public ResponseEntity<TokenResponseDto> callNext(@RequestParam Long serviceId, @RequestParam Long counterId) {
 		return ResponseEntity.ok(tokenService.callNextToken(serviceId, counterId));
 	}
 	
 	@GetMapping("/my-tokens")
-	public ResponseEntity<List<Token>> getMyTokens(User user) {
+	public ResponseEntity<List<TokenResponseDto>> getMyTokens(User user) {
 		return ResponseEntity.ok(tokenService.getTokenByUser(user));
 	}
 	
@@ -47,7 +47,7 @@ public class TokenController {
 	}
 	
 	@PutMapping("/{tokenId}/status")
-	public ResponseEntity<Token> updateStatus(
+	public ResponseEntity<TokenResponseDto> updateStatus(
 			@PathVariable Long tokenId,
 			@RequestParam TokenStatus status) {
 		
@@ -56,12 +56,12 @@ public class TokenController {
 	}
 	
 	@GetMapping("/service/{serviceId}")
-	public ResponseEntity<List<Token>> getTokensByService(@PathVariable Long serviceId) {
+	public ResponseEntity<List<TokenResponseDto>> getTokensByService(@PathVariable Long serviceId) {
 		return ResponseEntity.ok(tokenService.getTokenByService(serviceId));
 	}
 	
 	@GetMapping("/service/{serviceId}/today")
-	public ResponseEntity<List<Token>> getTodayTokens(@PathVariable Long serviceId) {
+	public ResponseEntity<List<TokenResponseDto>> getTodayTokens(@PathVariable Long serviceId) {
 		return ResponseEntity.ok(tokenService.getTodayTokens(serviceId));
 	}
 	

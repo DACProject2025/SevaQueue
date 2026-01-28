@@ -2,14 +2,16 @@ package com.sevaqueue.service;
 
 import java.util.List;
 
-import com.sevaqueue.entity.OfficeService;
+import com.sevaqueue.dto.ApiResponseDto;
+import com.sevaqueue.dto.ServiceRequestDto;
+import com.sevaqueue.dto.ServiceResponseDto;
 
 public interface OfficeServiceService {
 
-	OfficeService createService(Long officeId, OfficeService service);
+	ServiceResponseDto createService(Long officeId, ServiceRequestDto service);
 
-	List<OfficeService> getServiceByOffice(Long officeId);
+	List<ServiceResponseDto> getServiceByOffice(Long officeId);
 
-	OfficeService deactivateService(Long serviceId);
+	ApiResponseDto deactivateService(Long serviceId);
 	
 }

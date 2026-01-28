@@ -2,10 +2,14 @@ package com.sevaqueue.service;
 
 import java.util.List;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sevaqueue.dto.ApiResponseDto;
+import com.sevaqueue.dto.ServiceRequestDto;
+import com.sevaqueue.dto.ServiceResponseDto;
 import com.sevaqueue.entity.Office;
 import com.sevaqueue.entity.OfficeService;
 import com.sevaqueue.exception.ResourceNotFoundException;
@@ -23,34 +27,40 @@ public class OfficeServiceServiceImpl implements OfficeServiceService {
 	@Autowired
 	private OfficeRepository officeRepo;
 	
+	private ModelMapper modelMapper;
+	
 	@Override
 	@Transactional
-	public OfficeService createService(Long officeId, OfficeService service) {
+	public ServiceResponseDto createService(Long officeId, ServiceRequestDto service) {
 		
 		Office office = officeRepo.findById(officeId)
 				.orElseThrow(() -> new ResourceNotFoundException("Office not found!"));
-		
-		service.setOffice(office);
-		return serviceRepo.save(service);
+		OfficeService officeService = modelMapper.map(service, OfficeService.class);
+		officeService.setOffice(office);
+		return modelMapper.map(serviceRepo.save(officeService), ServiceResponseDto.class);
 		
 	}
 
 	@Override
-	public List<OfficeService> getServiceByOffice(Long officeId) {
+	public List<ServiceResponseDto> getServiceByOffice(Long officeId) {
 		
-		return serviceRepo.findByOfficeOfficeIdAndActiveTrue(officeId);
+		return serviceRepo.findByOfficeOfficeIdAndActiveTrue(officeId)
+				.stream()
+				.map(service -> modelMapper.map(service, ServiceResponseDto.class))
+				.toList();
 	
 	}
 	
 	@Override
 	@Transactional
-	public OfficeService deactivateService(Long serviceId) {
+	public ApiResponseDto deactivateService(Long serviceId) {
 		
 		OfficeService service = serviceRepo.findById(serviceId)
 				.orElseThrow(() -> new ResourceNotFoundException("Service not found!"));
 		
 		service.setActive(false);
-		return serviceRepo.save(service);
+		serviceRepo.save(service);
+		return new ApiResponseDto("Service deactivated successfully", true);
 		
 	}
 

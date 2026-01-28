@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sevaqueue.entity.Counter;
+import com.sevaqueue.dto.ApiResponseDto;
+import com.sevaqueue.dto.CounterResponseDto;
 import com.sevaqueue.entity.CounterStatus;
 import com.sevaqueue.service.CounterService;
 
@@ -24,23 +25,22 @@ public class CounterController {
 	private CounterService counterService;
 	
 	@PostMapping
-	public ResponseEntity<Counter> assignCounter(
+	public ResponseEntity<CounterResponseDto> assignCounter(
 			@RequestParam Long serviceId,
 			@RequestParam Long staffId,
 			@RequestParam Integer counterNumber ) {
 		
-		Counter counter = counterService.assignCounter(serviceId, staffId, counterNumber);
-		return ResponseEntity.ok(counter);
+		return ResponseEntity.ok(counterService.assignCounter(serviceId, staffId, counterNumber));
 		
 	}
 	
 	@GetMapping("/service/{serviceId}")
-	public ResponseEntity<List<Counter>> getCounterByService(@PathVariable Long serviceId) {
+	public ResponseEntity<List<CounterResponseDto>> getCounterByService(@PathVariable Long serviceId) {
 		return ResponseEntity.ok(counterService.getCountersByService(serviceId));
 	}
 	
 	@PutMapping("/{counterId}/status")
-	public ResponseEntity<Counter> updateStatus(
+	public ResponseEntity<ApiResponseDto> updateStatus(
 			@PathVariable Long counterId,
 			@RequestParam CounterStatus status) {
 		
