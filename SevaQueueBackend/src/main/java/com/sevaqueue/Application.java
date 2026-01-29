@@ -20,7 +20,8 @@ public class Application {
 		ModelMapper mapper = new ModelMapper();
 		mapper.getConfiguration() //get default config
 		.setPropertyCondition(Conditions.isNotNull()) //transfer only not null props from src-> dest
-		.setMatchingStrategy(MatchingStrategies.STRICT);//transfer the props form src -> dest which match by name & data type
+		.setMatchingStrategy(MatchingStrategies.STRICT)
+		;//transfer the props form src -> dest which match by name & data type
 	
 		return mapper;
 	}

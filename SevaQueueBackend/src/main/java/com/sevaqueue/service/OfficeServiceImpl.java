@@ -25,6 +25,10 @@ public class OfficeServiceImpl implements OfficeService {
 	
 	@Autowired
 	private CounterRepository counterRepo;
+	
+	public OfficeServiceImpl() {
+		modelMapper = new ModelMapper();
+	}
 
 	@Override
 	public OfficeResponseDto createOffice(OfficeRequestDto office) {

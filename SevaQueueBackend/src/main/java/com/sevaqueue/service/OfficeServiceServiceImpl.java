@@ -29,6 +29,15 @@ public class OfficeServiceServiceImpl implements OfficeServiceService {
 	
 	private ModelMapper modelMapper;
 	
+	public OfficeServiceServiceImpl() {
+
+
+		this.modelMapper = new ModelMapper();
+		System.out.println("ModelMapper instance: " + modelMapper);
+		System.out.println("ModelMapper class: " + modelMapper.getClass());
+
+	}
+	
 	@Override
 	@Transactional
 	public ServiceResponseDto createService(Long officeId, ServiceRequestDto service) {

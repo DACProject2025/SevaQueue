@@ -33,6 +33,10 @@ public class CounterServiceImpl implements CounterService {
 	private UserRepository userRepo;
 	
 	private ModelMapper modelMapper;
+	
+	public CounterServiceImpl() {
+		modelMapper = new ModelMapper();
+	}
 
 	@Override
 	@Transactional
