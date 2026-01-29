@@ -11,50 +11,69 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import com.sevaqueue.dto.ApiResponseDto;
+import com.sevaqueue.service.LoggerClient;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    private final LoggerClient loggerClient;
+
+    GlobalExceptionHandler(LoggerClient loggerClient) {
+        this.loggerClient = loggerClient;
+    }
+
 	@ExceptionHandler(ResourceNotFoundException.class)
-	public ResponseEntity<String> handleResourceNotFound(ResourceNotFoundException ex) {
+	public ResponseEntity<ApiResponseDto> handleResourceNotFound(ResourceNotFoundException ex) {
+		loggerClient.log("ERROR", ex.getMessage());
 		return ResponseEntity
 				.status(HttpStatus.NOT_FOUND)
-				.body(ex.getMessage());
+				.body(new ApiResponseDto(ex.getMessage(), false));
 	}
 	
 	@ExceptionHandler(UnauthorizedActionException.class)
-	public ResponseEntity<String> handleUnauthorizedAction(UnauthorizedActionException ex) {
+	public ResponseEntity<ApiResponseDto> handleUnauthorizedAction(UnauthorizedActionException ex) {
+		loggerClient.log("ERROR", ex.getMessage());
 		return ResponseEntity
 				.status(HttpStatus.FORBIDDEN)
-				.body(ex.getMessage());
+				.body(new ApiResponseDto(ex.getMessage(), false));
 	}
 	
 	@ExceptionHandler(QueueEmptyException.class)
-	public ResponseEntity<String> handleQueueEmpty(QueueEmptyException ex) {
+	public ResponseEntity<ApiResponseDto> handleQueueEmpty(QueueEmptyException ex) {
+		loggerClient.log("ERROR", ex.getMessage());
 		return ResponseEntity
-				.status(HttpStatus.NO_CONTENT)
-				.body(ex.getMessage());
+				.status(HttpStatus.BAD_REQUEST)
+				.body(new ApiResponseDto(ex.getMessage(), false));
 	}
 	
 	@ExceptionHandler(InvalidRequestException.class)
-	public ResponseEntity<String> handleInvalidRequest(InvalidRequestException ex) {
+	public ResponseEntity<ApiResponseDto> handleInvalidRequest(InvalidRequestException ex) {
+		loggerClient.log("ERROR", ex.getMessage());
 		return ResponseEntity
 				.status(HttpStatus.BAD_REQUEST)
-				.body(ex.getMessage());
+				.body(new ApiResponseDto(ex.getMessage(), false));
 	}
 	
 	@ExceptionHandler(Exception.class)
-	public ResponseEntity<String> handleGeneric(Exception ex) {
+	public ResponseEntity<ApiResponseDto> handleGeneric(Exception ex) {
+		loggerClient.log("ERROR", ex.getMessage());
 		return ResponseEntity
-				.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body("Something went wrong!");
+				.badRequest()
+				.body(new ApiResponseDto(ex.getMessage(), false));
 	}
 	
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<?> handleMethodArgumentNotValidException(MethodArgumentNotValidException methodArgumentNotValidException){
-		List<FieldError> fieldError = methodArgumentNotValidException.getFieldErrors(null);
-		Map<String, String> errorFieldMap = fieldError.stream()
+		List<FieldError> fieldError = methodArgumentNotValidException.getFieldErrors();
+		Map<String, String> errorFieldMap = fieldError
+				.stream()
 				.collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorFieldMap);
+		loggerClient.log("ERROR", "Validation failed: " + errorFieldMap.toString());
+		
+		return ResponseEntity
+				.status(HttpStatus.BAD_REQUEST)
+				.body(errorFieldMap);
 	}
 
 	

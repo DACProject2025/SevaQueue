@@ -37,6 +37,12 @@ public class TokenServiceImpl implements TokenService {
     private OfficeServiceRepository serviceRepo;
     
     private ModelMapper modelMapper;
+    
+    public TokenServiceImpl() {
+    	
+    	modelMapper = new ModelMapper();
+    	
+    }
 
     // CITIZEN → Generate token
     @Override
