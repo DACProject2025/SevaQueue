@@ -1,1 +1,7 @@
 /.metadata/
+SevaQueueBackend/target/
+
+
+LoggerService/.vs/
+LoggerService/bin/
+LoggerService/obj/
