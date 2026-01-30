@@ -1,9 +1,17 @@
 package com.sevaqueue.service;
 
-import com.sevaqueue.entity.Counter;
+import java.util.List;
+
+import com.sevaqueue.dto.ApiResponseDto;
+import com.sevaqueue.dto.CounterResponseDto;
+import com.sevaqueue.entity.CounterStatus;
 
 public interface CounterService {
 
-	Counter assignCounter(Long serviceId, Long staffId, Integer counterNumber);
+	CounterResponseDto assignCounter(Long serviceId, Long staffId, Integer counterNumber);
+
+	List<CounterResponseDto> getCountersByService(Long serviceId);
+
+	ApiResponseDto updateCounterStatus(Long counterId, CounterStatus status);
 
 }

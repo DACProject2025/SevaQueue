@@ -18,17 +18,16 @@ import lombok.Getter;
 import lombok.Setter;
 
 
-@Setter
-@Getter
 @Entity
+@Getter
+@Setter
 @Table(name = "tokens")
-
 public class Token {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "token_id")
-	private Long id;
+	private Long tokenId;
 	
 	@Column(name = "token_number", nullable = false)
 	private int tokenNumber;
@@ -50,8 +49,4 @@ public class Token {
 	@JoinColumn(name = "service_id", nullable = false)
 	private OfficeService service;
 
-	public void setCounter(Counter counter) {
-		// TODO Auto-generated method stub
-		
-	}
 }

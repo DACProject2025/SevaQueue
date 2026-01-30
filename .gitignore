@@ -1,5 +1,14 @@
 /.metadata/
+<<<<<<< HEAD
 target/
 **/target/
 *.class
 
+=======
+SevaQueueBackend/target/
+
+
+LoggerService/.vs/
+LoggerService/bin/
+LoggerService/obj/
+>>>>>>> friend/dev

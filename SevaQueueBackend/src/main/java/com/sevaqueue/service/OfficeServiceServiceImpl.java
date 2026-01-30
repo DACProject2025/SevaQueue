@@ -1,8 +1,15 @@
 package com.sevaqueue.service;
 
+import java.util.List;
+
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sevaqueue.dto.ApiResponseDto;
+import com.sevaqueue.dto.ServiceRequestDto;
+import com.sevaqueue.dto.ServiceResponseDto;
 import com.sevaqueue.entity.Office;
 import com.sevaqueue.entity.OfficeService;
 import com.sevaqueue.exception.ResourceNotFoundException;
@@ -11,8 +18,7 @@ import com.sevaqueue.repository.OfficeServiceRepository;
 
 
 
-@org.springframework.stereotype.Service
-@Transactional
+@Service
 public class OfficeServiceServiceImpl implements OfficeServiceService {
 
 	@Autowired
@@ -21,14 +27,50 @@ public class OfficeServiceServiceImpl implements OfficeServiceService {
 	@Autowired
 	private OfficeRepository officeRepo;
 	
+	private ModelMapper modelMapper;
+	
+	public OfficeServiceServiceImpl() {
+
+
+		this.modelMapper = new ModelMapper();
+		System.out.println("ModelMapper instance: " + modelMapper);
+		System.out.println("ModelMapper class: " + modelMapper.getClass());
+
+	}
+	
 	@Override
-	public OfficeService createService(Long officeId, OfficeService service) {
+	@Transactional
+	public ServiceResponseDto createService(Long officeId, ServiceRequestDto service) {
 		
 		Office office = officeRepo.findById(officeId)
 				.orElseThrow(() -> new ResourceNotFoundException("Office not found!"));
+		OfficeService officeService = modelMapper.map(service, OfficeService.class);
+		officeService.setOffice(office);
+		return modelMapper.map(serviceRepo.save(officeService), ServiceResponseDto.class);
 		
-		service.setOffice(office);
-		return serviceRepo.save(service);
+	}
+
+	@Override
+	public List<ServiceResponseDto> getServiceByOffice(Long officeId) {
+		
+		return serviceRepo.findByOfficeOfficeIdAndActiveTrue(officeId)
+				.stream()
+				.map(service -> modelMapper.map(service, ServiceResponseDto.class))
+				.toList();
+	
+	}
+	
+	@Override
+	@Transactional
+	public ApiResponseDto deactivateService(Long serviceId) {
+		
+		OfficeService service = serviceRepo.findById(serviceId)
+				.orElseThrow(() -> new ResourceNotFoundException("Service not found!"));
+		
+		service.setActive(false);
+		serviceRepo.save(service);
+		return new ApiResponseDto("Service deactivated successfully", true);
+		
 	}
 
 }
