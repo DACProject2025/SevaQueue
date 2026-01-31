@@ -17,6 +17,7 @@ import com.sevaqueueauthservice.security.JwtUtils;
 import com.sevaqueueauthservice.security.UserPrincipal;
 import com.sevaqueueauthservice.DTO.AuthResponseDTO;
 import com.sevaqueueauthservice.DTO.LoginRequestDTO;
+import com.sevaqueueauthservice.DTO.RegisterRequestDTO;
 import com.sevaqueueauthservice.DTO.ResetPasswordDTO;
 import com.sevaqueueauthservice.DTO.UpdateUserDTO;
 import com.sevaqueueauthservice.entity.User;
@@ -40,7 +41,7 @@ public class AuthController {
 	private JwtUtils jwtUtils;
 	
 	@PostMapping("/register")
-	public ResponseEntity<User> register(@RequestBody User user){
+	public ResponseEntity<User> register(@RequestBody RegisterRequestDTO user){
 		return ResponseEntity.ok(userService.register(user));
 	}
 	

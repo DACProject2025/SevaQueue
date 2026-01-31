@@ -37,12 +37,7 @@ public class OfficeServiceImpl implements OfficeService {
 
 	@Override
 	public List<OfficeResponseDto> getAllOffices() {
-		
-		return officeRepo.findByActiveTrue()
-				.stream()
-				.map(office -> modelMapper.map(office, OfficeResponseDto.class))
-				.toList();
-		
+	    return officeRepo.findActiveOffices();
 	}
 
 	@Override

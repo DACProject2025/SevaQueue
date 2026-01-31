@@ -1,4 +1,4 @@
-package com.sevaqueueauthservice.DTO;
+package com.sevaqueue.dto;
 
 import com.sevaqueue.entity.Role;
 import jakarta.validation.constraints.Email;

@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.sevaqueueauthservice.DTO.LoginRequestDTO;
+import com.sevaqueueauthservice.DTO.RegisterRequestDTO;
 import com.sevaqueueauthservice.DTO.ResetPasswordDTO;
 import com.sevaqueueauthservice.DTO.UpdateUserDTO;
 import com.sevaqueueauthservice.customexception.EmailAlreadyExistsException;
@@ -30,19 +31,27 @@ public class UserServiceImpl implements UserService {
 	private PasswordEncoder passwordEncoder;
 
 	@Override
-	public User register(User user) {
-		if (userRepository.existsByEmail(user.getEmail())) {
-			throw new EmailAlreadyExistsException("Email Already registered");
-		}
-		
-		user.setPassword(passwordEncoder.encode(user.getPassword()));
-		
-		if(user.getRole() == null) {
-			user.setRole(Role.CITIZEN);
-		}
-		
-		return userRepository.save(user);
+	public User register(RegisterRequestDTO dto) {
+
+	    if (userRepository.existsByEmail(dto.getEmail())) {
+	        throw new EmailAlreadyExistsException("Email already registered");
+	    }
+
+	    // 1. Map DTO → Entity
+	    User user = modelMapper.map(dto, User.class);
+
+	    // 2. Encode password
+	    user.setPassword(passwordEncoder.encode(dto.getPassword()));
+
+	    // 3. Set default role
+	    if (user.getRole() == null) {
+	        user.setRole(Role.CITIZEN);
+	    }
+
+	    // 4. Save entity
+	    return userRepository.save(user);
 	}
+
 
 	@Override
     public String login(LoginRequestDTO dto) {
