@@ -2,6 +2,8 @@ package com.sevaqueue.entity;
 
 import java.time.LocalTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,8 +18,8 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "offices")
 public class Office {
 	
@@ -39,9 +41,11 @@ public class Office {
 	private String state;
 	
 	@Column(name = "opening_time", nullable = false)
+	@JsonFormat(pattern = "HH:mm")
 	private LocalTime openTime;
-	
+
 	@Column(name = "closing_time", nullable = false)
+	@JsonFormat(pattern = "HH:mm")
 	private LocalTime closeTime;
 	
 	@Column(nullable = false)

@@ -20,11 +20,10 @@ public class OfficeServiceImpl implements OfficeService {
 	@Autowired
 	private OfficeRepository officeRepo;
 	
-	private ModelMapper modelMapper;
-
-	
 	@Autowired
 	private CounterRepository counterRepo;
+	
+	private ModelMapper modelMapper;
 	
 	public OfficeServiceImpl() {
 		modelMapper = new ModelMapper();
@@ -55,7 +54,7 @@ public class OfficeServiceImpl implements OfficeService {
 	}
 
 	@Override
-	public long getCounterCountByoffice(Long officeId) {
+	public long getCounterCountByOffice(Long officeId) {
 	
 		return counterRepo.countCountersByOfficeId(officeId);
 	
@@ -72,7 +71,5 @@ public class OfficeServiceImpl implements OfficeService {
 		return new ApiResponseDto("Counter status updated", true);
 		
 	}
-	
-	
 
 }

@@ -25,7 +25,6 @@ public class OfficeController {
 		@Autowired
 		private OfficeService officeService;
 		
-		
 		@PostMapping
 		public ResponseEntity<OfficeResponseDto> createOffice(@RequestBody OfficeRequestDto dto) {
 			return ResponseEntity.ok(officeService.createOffice(dto));
@@ -41,9 +40,9 @@ public class OfficeController {
 			return ResponseEntity.ok(officeService.getOfficeById(officeId));
 		}
 		
-		@GetMapping("/{officeId}/counter-count")
+		@GetMapping("/getcount/{officeId}/counter-count")
 		public ResponseEntity<Long> getCounterCount(@PathVariable Long officeId){
-			return ResponseEntity.ok(officeService.getCounterCountByoffice(officeId));
+			return ResponseEntity.ok(officeService.getCounterCountByOffice(officeId));
 		}
 		
 		@PutMapping("/{officeId}/deactivate")

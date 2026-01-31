@@ -13,9 +13,10 @@ public interface OfficeService {
 	List<OfficeResponseDto> getAllOffices();
 	
 	OfficeResponseDto getOfficeById(Long id);
-	
-	long getCounterCountByoffice(Long officeId);
+
+	long getCounterCountByOffice(Long officeId);
 
 	ApiResponseDto deactivateOffice(Long officeId);
+
 	
 }
