@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sevaqueue.dto.ApiResponseDto;
+import com.sevaqueue.dto.CounterRequestDto;
 import com.sevaqueue.dto.CounterResponseDto;
 import com.sevaqueue.entity.Counter;
 import com.sevaqueue.entity.CounterStatus;
@@ -80,5 +81,24 @@ public class CounterServiceImpl implements CounterService {
 		counterRepo.save(counter);
 		return new ApiResponseDto("Counter status updated", true);
 	}
+	
+	@Override
+	public Counter createCounter(CounterRequestDto dto) {
+
+	    OfficeService service = serviceRepo.findById(dto.getServiceId())
+	            .orElseThrow(() -> new RuntimeException("Service not found"));
+
+	    User staff = userRepo.findById(dto.getStaffId())
+	            .orElseThrow(() -> new RuntimeException("Staff not found"));
+
+	    Counter counter = new Counter();
+	    counter.setCounterNumber(dto.getCounterNumber());
+	    counter.setService(service);
+	    counter.setStaff(staff);
+	    counter.setStatus(CounterStatus.OPEN);
+
+	    return counterRepo.save(counter);
+	}
+
 
 }

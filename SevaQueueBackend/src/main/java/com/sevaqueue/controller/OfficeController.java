@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +27,7 @@ public class OfficeController {
 		private OfficeService officeService;
 		
 		@PostMapping
+		@PreAuthorize("hasRole('ADMIN')")
 		public ResponseEntity<OfficeResponseDto> createOffice(@RequestBody OfficeRequestDto dto) {
 			return ResponseEntity.ok(officeService.createOffice(dto));
 		}
@@ -46,6 +48,7 @@ public class OfficeController {
 		}
 		
 		@PutMapping("/{officeId}/deactivate")
+		@PreAuthorize("hasRole('ADMIN')")
 		public ResponseEntity<ApiResponseDto> deactivateOffice(@PathVariable Long officeId) {
 			
 			return ResponseEntity.ok(officeService.deactivateOffice(officeId));

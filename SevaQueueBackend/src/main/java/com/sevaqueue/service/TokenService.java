@@ -8,11 +8,12 @@ import com.sevaqueue.dto.QueueStatusDto;
 import com.sevaqueue.dto.TokenResponseDto;
 import com.sevaqueue.entity.TokenStatus;
 import com.sevaqueue.entity.User;
+import com.sevaqueue.security.UserPrincipal;
 
 @Service
 public interface TokenService {
 
-	public TokenResponseDto generateToken(Long serviceId, User userId);
+	public TokenResponseDto generateToken(Long serviceId, UserPrincipal principal);
 	
 	public TokenResponseDto callNextToken(Long serviceId,  Long counterId);
 
