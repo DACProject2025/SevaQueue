@@ -1,9 +1,7 @@
 package com.sevaqueueauthservice.DTO;
 
-import com.sevaqueue.entity.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -31,9 +29,7 @@ public class RegisterRequestDTO {
         message = "Mobile number must be a valid 10-digit Indian number"
     )
     private String mobile;
-
-    @NotNull(message = "Role is required")
-    private Role role;
+    
 }
 
 

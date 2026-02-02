@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class OfficeRequestDto {
 
-	private String OfficeName;
+	private String officeName;
 	private String address;
 	private String city;
 	private String state;

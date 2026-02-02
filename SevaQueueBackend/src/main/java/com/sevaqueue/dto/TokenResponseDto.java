@@ -17,5 +17,7 @@ public class TokenResponseDto {
 	private int tokenNumber;
 	private String status;
 	private LocalDateTime createdAt;
+	private String serviceName;
+	private String officeName;
 	
 }

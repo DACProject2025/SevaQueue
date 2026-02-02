@@ -41,7 +41,7 @@ public class User {
 	private String mobile;
 	
 	@Enumerated(EnumType.STRING)
-	private Role role;
+	private Role role = Role.CITIZEN;
 	
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false)

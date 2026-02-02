@@ -11,6 +11,6 @@ public class ServiceRequestDto {
 
 	private String serviceName;
 	private int avgServiceTime;
-	private int maxTokenPerDay;
+	private int maxTokensPerDay;
 	
 }
