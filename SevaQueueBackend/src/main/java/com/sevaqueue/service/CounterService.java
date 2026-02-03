@@ -16,6 +16,8 @@ public interface CounterService {
 
 	ApiResponseDto updateCounterStatus(Long counterId, CounterStatus status);
 
-	Counter createCounter(CounterRequestDto dto);
+	CounterResponseDto createCounter(CounterRequestDto dto);
+
+	List<CounterResponseDto> getCountersByStaff(Long staffId);
 
 }

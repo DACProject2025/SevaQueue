@@ -18,41 +18,50 @@ import com.sevaqueue.dto.OfficeRequestDto;
 import com.sevaqueue.dto.OfficeResponseDto;
 import com.sevaqueue.service.OfficeService;
 
-
 @RestController
 @RequestMapping("/api/offices")
 public class OfficeController {
-  
-		@Autowired
-		private OfficeService officeService;
-		
-		@PostMapping
-		@PreAuthorize("hasRole('ADMIN')")
-		public ResponseEntity<OfficeResponseDto> createOffice(@RequestBody OfficeRequestDto dto) {
-			return ResponseEntity.ok(officeService.createOffice(dto));
-		}
-		
-		@GetMapping
-		public ResponseEntity<List<OfficeResponseDto>> getAllOffices() {
-			return ResponseEntity.ok(officeService.getAllOffices());
-		}
-		
-		@GetMapping("/{officeId}")
-		public ResponseEntity<OfficeResponseDto> getOfficeById(@PathVariable Long officeId){
-			return ResponseEntity.ok(officeService.getOfficeById(officeId));
-		}
-		
-		@GetMapping("/getcount/{officeId}/counter-count")
-		public ResponseEntity<Long> getCounterCount(@PathVariable Long officeId){
-			return ResponseEntity.ok(officeService.getCounterCountByOffice(officeId));
-		}
-		
-		@PutMapping("/{officeId}/deactivate")
-		@PreAuthorize("hasRole('ADMIN')")
-		public ResponseEntity<ApiResponseDto> deactivateOffice(@PathVariable Long officeId) {
-			
-			return ResponseEntity.ok(officeService.deactivateOffice(officeId));
-					
-		}
-	
+
+	@Autowired
+	private OfficeService officeService;
+
+	@PostMapping
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<OfficeResponseDto> createOffice(@RequestBody OfficeRequestDto dto) {
+		return ResponseEntity.ok(officeService.createOffice(dto));
+	}
+
+	@GetMapping
+	public ResponseEntity<List<OfficeResponseDto>> getActiveOffices() {
+		return ResponseEntity.ok(officeService.getActiveOffices());
+	}
+
+	@GetMapping("/all")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<List<OfficeResponseDto>> getAllOffices() {
+		return ResponseEntity.ok(officeService.getAllOffices());
+	}
+
+	@GetMapping("/{officeId}")
+	public ResponseEntity<OfficeResponseDto> getOfficeById(@PathVariable Long officeId) {
+		return ResponseEntity.ok(officeService.getOfficeById(officeId));
+	}
+
+	@GetMapping("/getcount/{officeId}/counter-count")
+	public ResponseEntity<Long> getCounterCount(@PathVariable Long officeId) {
+		return ResponseEntity.ok(officeService.getCounterCountByOffice(officeId));
+	}
+
+	@PutMapping("/{officeId}/toggle-status")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<ApiResponseDto> toggleOfficeStatus(@PathVariable Long officeId) {
+		return ResponseEntity.ok(officeService.toggleOfficeStatus(officeId));
+	}
+
+	@PutMapping("/{officeId}/deactivate")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<ApiResponseDto> deactivateOffice(@PathVariable Long officeId) {
+		return ResponseEntity.ok(officeService.deactivateOffice(officeId));
+	}
+
 }

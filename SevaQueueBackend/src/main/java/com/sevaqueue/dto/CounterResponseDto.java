@@ -11,8 +11,17 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CounterResponseDto {
 
-	private Long counterId;
-	private int counterNumber;
-	private String status;
-	
+    private Long counterId;
+    private int counterNumber;
+
+    private Long serviceId;
+    private String serviceName;
+
+    private Long officeId;
+    private String officeName;
+
+    private Long staffId;
+    private String staffName;
+
+    private String status;
 }

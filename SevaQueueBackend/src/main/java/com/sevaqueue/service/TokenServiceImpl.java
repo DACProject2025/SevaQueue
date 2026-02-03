@@ -31,22 +31,25 @@ public class TokenServiceImpl implements TokenService {
 
     @Autowired
     private TokenRepository tokenRepo;
-    
+
     @Autowired
     private CounterRepository counterRepo;
-    
+
     @Autowired
     private UserRepository userRepo;
 
     @Autowired
     private OfficeServiceRepository serviceRepo;
-    
+
+    @Autowired
+    private SmsService smsService;
+
     private ModelMapper modelMapper;
-    
+
     public TokenServiceImpl() {
-    	
-    	modelMapper = new ModelMapper();
-    	
+
+        modelMapper = new ModelMapper();
+
     }
 
     @Override
@@ -74,7 +77,7 @@ public class TokenServiceImpl implements TokenService {
         LocalTime now = LocalTime.now();
 
         if (now.isBefore(service.getOffice().getOpenTime()) ||
-            now.isAfter(service.getOffice().getCloseTime())) {
+                now.isAfter(service.getOffice().getCloseTime())) {
             throw new IllegalStateException("Office is currently closed!");
         }
 
@@ -92,28 +95,34 @@ public class TokenServiceImpl implements TokenService {
         token.setService(service);
         token.setUser(user);
 
-        return modelMapper.map(tokenRepo.save(token), TokenResponseDto.class);
-    }
+        Token savedToken = tokenRepo.save(token);
 
+        // SMS Notification on Generation
+        smsService.sendSms(user.getMobile(),
+                "Hello " + user.getName() + ", your token #" + savedToken.getTokenNumber() +
+                        " for " + service.getServiceName()
+                        + " has been generated successfully. Please wait for your turn.");
+
+        return modelMapper.map(savedToken, TokenResponseDto.class);
+    }
 
     @Override
     @Transactional
     public TokenResponseDto callNextToken(Long serviceId, Long counterId) {
 
-    	Counter counter = counterRepo.findById(counterId)
-    			.orElseThrow(() -> new ResourceNotFoundException("Counter not found!"));
-    	
-    	if(counter.getStatus() == CounterStatus.CLOSED) {
-    		throw new IllegalStateException("Counter is Closed!");
-    	}
-    	
+        Counter counter = counterRepo.findById(counterId)
+                .orElseThrow(() -> new ResourceNotFoundException("Counter not found!"));
+
+        if (counter.getStatus() == CounterStatus.CLOSED) {
+            throw new IllegalStateException("Counter is Closed!");
+        }
+
         // check service exists
         OfficeService service = serviceRepo.findById(serviceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
 
         // get waiting tokens for this service
-        List<Token> waitingTokens =
-                tokenRepo.findWaitingTokensByService(serviceId);
+        List<Token> waitingTokens = tokenRepo.findWaitingTokensByService(serviceId);
 
         if (waitingTokens.isEmpty()) {
             throw new QueueEmptyException("No tokens in queue");
@@ -123,59 +132,86 @@ public class TokenServiceImpl implements TokenService {
         Token token = waitingTokens.get(0);
         token.setStatus(TokenStatus.CALLED);
 
-        return modelMapper.map(tokenRepo.save(token), TokenResponseDto.class);
+        Token savedToken = tokenRepo.save(token);
+
+        // SMS Notification when token is called
+        User tokenUser = savedToken.getUser();
+        OfficeService tokenService = savedToken.getService();
+        smsService.sendSms(tokenUser.getMobile(),
+                "Hello " + tokenUser.getName() + ", your token #" + savedToken.getTokenNumber() +
+                        " for " + tokenService.getServiceName() + " is now CALLED. Please proceed to the counter.");
+
+        return modelMapper.map(savedToken, TokenResponseDto.class);
     }
 
     @Override
-	public List<TokenResponseDto> getTokenByUser(User user) {
-		
-		return tokenRepo.findByUser(user)
-				.stream()
-				.map(token -> modelMapper.map(token, TokenResponseDto.class))
-				.toList();
-	}
+    public List<TokenResponseDto> getTokenByUserId(Long userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-	@Override
-	public QueueStatusDto getQueueStatus(Long serviceId, User user) {
+        List<Token> tokens = tokenRepo.findByUser(user);
 
-		OfficeService service = serviceRepo.findById(serviceId)
-				.orElseThrow(() -> new ResourceNotFoundException("Service not found!"));
-		List<Token> waiting = tokenRepo.findWaitingTokensByService(serviceId);
-		int current = waiting.isEmpty() ? 0 : waiting.get(0).getTokenNumber();
-		int myToken = tokenRepo.findUserTokenNumber(serviceId, user.getId());
-		int tokensAhead = Math.max(0,  myToken - current);
-		int avgTime = service.getAvgServiceTime();
-		
-		return new QueueStatusDto(current, myToken, tokensAhead, avgTime);
-	}
+        return tokens.stream()
+                .map(token -> modelMapper.map(token, TokenResponseDto.class))
+                .toList();
+    }
 
-	@Override
-	@Transactional
-	public TokenResponseDto updateStatus(Long tokenId, TokenStatus status) {
-		
-		Token token = tokenRepo.findById(tokenId)
-				.orElseThrow(() -> new ResourceNotFoundException("Token not found!"));
-		token.setStatus(status);
-		return modelMapper.map(tokenRepo.save(token), TokenResponseDto.class);
-		
-	}
+    @Override
+    public QueueStatusDto getQueueStatusByToken(Long tokenId) {
+        Token userToken = tokenRepo.findById(tokenId)
+                .orElseThrow(() -> new ResourceNotFoundException("Token not found"));
 
-	@Override
-	public List<TokenResponseDto> getTokenByService(Long serviceId) {
-		
-		return tokenRepo.findByServiceServiceIdOrderByCreatedAt(serviceId)
-				.stream()
-				.map(token -> modelMapper.map(token, TokenResponseDto.class))
-				.toList();
-	}
+        Long serviceId = userToken.getService().getServiceId();
 
-	@Override
-	public List<TokenResponseDto> getTodayTokens(Long serviceId) {
-		
-		return tokenRepo.findTodayTokens(serviceId)
-				.stream()
-				.map(token -> modelMapper.map(token, TokenResponseDto.class))
-				.toList();
-	}
+        // Get currently serving (latest CALLED)
+        List<Token> called = tokenRepo.findCalledTokensByService(serviceId);
+        String currentServing = called.isEmpty() ? "None" : String.valueOf(called.get(0).getTokenNumber());
+
+        // Count tokens ahead (WAITING and created before userToken)
+        int ahead = 0;
+        if (userToken.getStatus() == com.sevaqueue.entity.TokenStatus.WAITING) {
+            List<Token> waiting = tokenRepo.findWaitingTokensByService(serviceId);
+            for (Token t : waiting) {
+                if (t.getTokenId().equals(userToken.getTokenId()))
+                    break;
+                ahead++;
+            }
+        }
+
+        boolean isTurn = userToken.getStatus() == com.sevaqueue.entity.TokenStatus.CALLED;
+
+        return new QueueStatusDto(currentServing, ahead, String.valueOf(userToken.getTokenNumber()),
+                userToken.getStatus(), isTurn);
+    }
+
+    @Override
+    @Transactional
+    public TokenResponseDto updateStatus(Long tokenId, TokenStatus status) {
+
+        Token token = tokenRepo.findById(tokenId)
+                .orElseThrow(() -> new ResourceNotFoundException("Token not found!"));
+        token.setStatus(status);
+        Token savedToken = tokenRepo.save(token);
+        return modelMapper.map(savedToken, TokenResponseDto.class);
+
+    }
+
+    @Override
+    public List<TokenResponseDto> getTokenByService(Long serviceId) {
+
+        return tokenRepo.findByServiceServiceIdOrderByCreatedAt(serviceId)
+                .stream()
+                .map(token -> modelMapper.map(token, TokenResponseDto.class))
+                .toList();
+    }
+
+    @Override
+    public List<TokenResponseDto> getTodayTokens(Long serviceId) {
+
+        return tokenRepo.findTodayTokens(serviceId)
+                .stream()
+                .map(token -> modelMapper.map(token, TokenResponseDto.class))
+                .toList();
+    }
 
 }

@@ -1,7 +1,6 @@
 package com.sevaqueueauthservice.security;
 
 import java.util.Date;
-import java.util.Map;
 
 import javax.crypto.SecretKey;
 
@@ -35,15 +34,14 @@ public class JwtUtils {
 
     // STEP 5.2 – generate JWT
     public String generateToken(UserPrincipal principal) {
-
+        System.out.println(
+                "DEBUG: Generating JWT for Staff ID: " + principal.getUserId() + ", Role: " + principal.getRole());
         return Jwts.builder()
-                .subject(principal.getUsername())   // email
+                .subject(principal.getUsername()) // email
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpirationTime))
-                .claims(Map.of(
-                        "userId", principal.getUserId(),
-                        "role", principal.getRole()
-                ))
+                .claim("userId", principal.getUserId())
+                .claim("role", principal.getRole().name())
                 .signWith(secretKey)
                 .compact();
     }
@@ -58,8 +56,8 @@ public class JwtUtils {
                 .parseSignedClaims(token)
                 .getPayload();
     }
-    
- // extract username (email) from token
+
+    // extract username (email) from token
     public String getUsernameFromToken(String token) {
         Claims claims = validateToken(token);
         return claims.getSubject();
@@ -75,8 +73,7 @@ public class JwtUtils {
         return new UserPrincipal(
                 userId,
                 claims.getSubject(),
-                com.sevaqueueauthservice.entity.Role.valueOf(roleStr)
-        );
+                com.sevaqueueauthservice.entity.Role.valueOf(roleStr));
     }
 
 }

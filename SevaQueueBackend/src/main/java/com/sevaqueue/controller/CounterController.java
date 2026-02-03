@@ -27,42 +27,45 @@ public class CounterController {
 
 	@Autowired
 	private CounterService counterService;
-	
+
 	@PostMapping("/assign")
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<CounterResponseDto> assignCounter(
 			@RequestParam Long serviceId,
 			@RequestParam Long staffId,
-			@RequestParam Integer counterNumber ) {
-		
-		return ResponseEntity.ok(counterService.assignCounter(serviceId, staffId, counterNumber));
-		
-	}
-	
-	 @PreAuthorize("hasRole('ADMIN')")
-	    @PostMapping("/create")
-	    public ResponseEntity<Counter> createCounter(
-	            @RequestBody CounterRequestDto dto) {
+			@RequestParam Integer counterNumber) {
 
-	        return ResponseEntity.ok(counterService.createCounter(dto));
-	    }
-	
-	
-	
+		return ResponseEntity.ok(counterService.assignCounter(serviceId, staffId, counterNumber));
+
+	}
+
+	@PreAuthorize("hasRole('ADMIN')")
+	@PostMapping("/create")
+	public ResponseEntity<CounterResponseDto> createCounter(
+			@RequestBody CounterRequestDto dto) {
+
+		return ResponseEntity.ok(counterService.createCounter(dto));
+	}
+
 	@GetMapping("/service/{serviceId}")
 	public ResponseEntity<List<CounterResponseDto>> getCounterByService(@PathVariable Long serviceId) {
 		return ResponseEntity.ok(counterService.getCountersByService(serviceId));
 	}
-	
+
 	@PutMapping("/{counterId}/status")
-	@PreAuthorize("hasRole('STAFF')")
+	@PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
 	public ResponseEntity<ApiResponseDto> updateStatus(
-			@PathVariable Long counterId, 
+			@PathVariable Long counterId,
 			@RequestParam CounterStatus status) {
-		
+
 		return ResponseEntity.ok(counterService.updateCounterStatus(counterId, status));
-		
+
 	}
 	
-	
+	@GetMapping("/staff/{staffId}")
+	@PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
+	public ResponseEntity<List<CounterResponseDto>> getCountersByStaff(@PathVariable Long staffId) {
+		return ResponseEntity.ok(counterService.getCountersByStaff(staffId));
+	}
+
 }

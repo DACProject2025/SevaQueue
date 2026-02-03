@@ -1,5 +1,7 @@
 package com.sevaqueue.dto;
 
+import com.sevaqueue.entity.TokenStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -7,13 +9,12 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class QueueStatusDto {
-	
-	private int currentToken;
-	private int myToken;
-	private int tokensAhead;
-	private int estimatedWaitTime; // minutes
-	
+	private String currentServingTokenNumber;
+	private int waitingBeforeUser;
+	private String userTokenNumber;
+	private TokenStatus status;
+	private boolean isUserTurn;
 }

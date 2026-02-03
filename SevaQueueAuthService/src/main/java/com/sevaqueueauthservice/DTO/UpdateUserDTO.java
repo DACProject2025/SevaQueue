@@ -10,6 +10,6 @@ import lombok.Setter;
 public class UpdateUserDTO {
     private String name;
     private String mobile;
-    private Role role;
+    private String email;
 }
 

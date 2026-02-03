@@ -16,11 +16,13 @@ public interface CounterRepository extends JpaRepository<Counter, Long> {
     List<Counter> findByServiceServiceId(Long serviceId);
 
     List<Counter> findByServiceServiceIdAndStatus(Long serviceId, CounterStatus status);
-    
+
+    List<Counter> findByStaff_Id(Long staffId);
+
     @Query("""
-            SELECT COUNT(c)
-            FROM Counter c
-            WHERE c.service.office.id = :officeId
-        """)
-        long countCountersByOfficeId(Long officeId);
+                SELECT COUNT(c)
+                FROM Counter c
+                WHERE c.service.office.id = :officeId
+            """)
+    long countCountersByOfficeId(Long officeId);
 }

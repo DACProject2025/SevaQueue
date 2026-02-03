@@ -9,14 +9,17 @@ import com.sevaqueue.dto.OfficeResponseDto;
 public interface OfficeService {
 
 	OfficeResponseDto createOffice(OfficeRequestDto dto);
-	
+
+	List<OfficeResponseDto> getActiveOffices();
+
 	List<OfficeResponseDto> getAllOffices();
-	
+
 	OfficeResponseDto getOfficeById(Long id);
 
 	long getCounterCountByOffice(Long officeId);
 
 	ApiResponseDto deactivateOffice(Long officeId);
 
-	
+	ApiResponseDto toggleOfficeStatus(Long officeId);
+
 }
