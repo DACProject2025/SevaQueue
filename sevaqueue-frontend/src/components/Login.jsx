@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import brandImage from '../assets/sevaqueue-brand.jpg';
+import brandImage from '../assets/logo.png';
 
 const Login = () => {
     const [email, setEmail] = useState('');

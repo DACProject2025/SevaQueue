@@ -63,9 +63,9 @@ const TokenStatusRow = ({ token }) => {
                     <div style={{ color: '#4ade80', fontWeight: 'bold', fontSize: '0.9rem', animation: 'pulse 2s infinite' }}>
                         📢 IT'S YOUR TURN! PROCEED TO COUNTER
                     </div>
-                    <div style={{ color: '#cbd5e1', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                    {/* <div style={{ color: '#cbd5e1', fontSize: '0.75rem', marginTop: '0.25rem' }}>
                         (SMS notification sent to your registered number)
-                    </div>
+                    </div> */}
                 </div>
             )}
         </div>
