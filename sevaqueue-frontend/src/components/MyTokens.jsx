@@ -36,12 +36,28 @@ const TokenStatusRow = ({ token }) => {
 
     if (!status) return null;
 
+    // Calculate estimated wait time
+    const estimatedMinutes = status.waitingBeforeUser * status.avgServiceTime;
+    const hours = Math.floor(estimatedMinutes / 60);
+    const minutes = estimatedMinutes % 60;
+    const estimatedTimeStr = hours > 0
+        ? `~${hours}h ${minutes}m`
+        : `~${minutes} min`;
+
     return (
         <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(139, 92, 246, 0.1)', borderRadius: '8px', borderLeft: '3px solid #8b5cf6' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
                 <span>Currently Serving: <strong style={{ color: '#8b5cf6' }}>{status.currentServingTokenNumber}</strong></span>
                 <span>Wait: <strong style={{ color: '#8b5cf6' }}>{status.waitingBeforeUser}</strong> ahead</span>
             </div>
+            {status.waitingBeforeUser > 0 && (
+                <div style={{ fontSize: '0.85rem', color: '#cbd5e1', marginTop: '0.25rem' }}>
+                    Estimated wait time: <strong style={{ color: '#a78bfa' }}>{estimatedTimeStr}</strong>
+                    <span style={{ fontSize: '0.75rem', color: '#94a3b8', marginLeft: '0.5rem' }}>
+                        (Avg service: {status.avgServiceTime} min)
+                    </span>
+                </div>
+            )}
             {status.userTurn && (
                 <div style={{ marginTop: '0.5rem', textAlign: 'center' }}>
                     <div style={{ color: '#4ade80', fontWeight: 'bold', fontSize: '0.9rem', animation: 'pulse 2s infinite' }}>

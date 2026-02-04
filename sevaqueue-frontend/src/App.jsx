@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, Link, useNavigate, useLocation } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
@@ -50,10 +50,29 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+const RoleProtectedRoute = ({ allowedRoles, children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div>Loading...</div>;
+  if (!user) return <Navigate to="/login" />;
+
+  const rawRole = user.role ? user.role.toUpperCase() : '';
+  const normalizedRole = rawRole.startsWith('ROLE_') ? rawRole.slice(5) : rawRole;
+
+  if (!allowedRoles.includes(normalizedRole)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+};
+
 function App() {
+  const location = useLocation();
+  const hideNavbar = location.pathname === '/login' || location.pathname === '/register';
+
   return (
     <>
-      <Navbar />
+      {!hideNavbar && <Navbar />}
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -84,9 +103,9 @@ function App() {
         <Route
           path="/admin/office/:id"
           element={
-            <ProtectedRoute>
+            <RoleProtectedRoute allowedRoles={['ADMIN']}>
               <ManageOffice />
-            </ProtectedRoute>
+            </RoleProtectedRoute>
           }
         />
         <Route

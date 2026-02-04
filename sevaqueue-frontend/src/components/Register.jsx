@@ -37,12 +37,12 @@ const Register = () => {
     };
 
     return (
-        <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '2rem 1rem' }}>
-            <div className="glass-card fade-in" style={{ width: '100%', maxWidth: '550px', padding: '2.5rem' }}>
+        <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '1rem' }}>
+            <div className="glass-card fade-in" style={{ width: '100%', maxWidth: '500px', padding: '2rem 1.75rem' }}>
                 <h2 style={{
                     textAlign: 'center',
-                    marginBottom: '0.5rem',
-                    fontSize: '2rem',
+                    marginBottom: '0.4rem',
+                    fontSize: '1.85rem',
                     fontWeight: '600',
                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     WebkitBackgroundClip: 'text',
@@ -52,9 +52,9 @@ const Register = () => {
                 </h2>
                 <p style={{
                     textAlign: 'center',
-                    marginBottom: '2rem',
+                    marginBottom: '1.5rem',
                     color: '#cbd5e1',
-                    fontSize: '0.95rem'
+                    fontSize: '0.9rem'
                 }}>
                     Join SevaQueue to manage your time efficiently
                 </p>
@@ -74,7 +74,7 @@ const Register = () => {
                 )}
 
                 <form onSubmit={handleSubmit}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
                         <div>
                             <label style={{
                                 display: 'block',
@@ -125,7 +125,7 @@ const Register = () => {
                         </div>
                     </div>
 
-                    <div style={{ marginBottom: '1.25rem' }}>
+                    <div style={{ marginBottom: '1rem' }}>
                         <label style={{
                             display: 'block',
                             marginBottom: '0.5rem',
@@ -150,7 +150,7 @@ const Register = () => {
                         />
                     </div>
 
-                    <div style={{ marginBottom: '1.25rem' }}>
+                    <div style={{ marginBottom: '1rem' }}>
                         <label style={{
                             display: 'block',
                             marginBottom: '0.5rem',
@@ -175,7 +175,7 @@ const Register = () => {
                         />
                     </div>
 
-                    <div style={{ marginBottom: '1.5rem' }}>
+                    <div style={{ marginBottom: '1.25rem' }}>
                         <label style={{
                             display: 'block',
                             marginBottom: '0.5rem',
@@ -248,7 +248,7 @@ const Register = () => {
 
                 <p style={{
                     textAlign: 'center',
-                    marginTop: '1.5rem',
+                    marginTop: '1.25rem',
                     fontSize: '0.9rem',
                     color: '#cbd5e1'
                 }}>

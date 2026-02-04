@@ -65,7 +65,7 @@ public class CounterController {
 	@GetMapping("/staff/{staffId}")
 	@PreAuthorize("hasAnyRole('STAFF', 'ADMIN')")
 	public ResponseEntity<List<CounterResponseDto>> getCountersByStaff(@PathVariable Long staffId) {
-		return ResponseEntity.ok(counterService.getCountersByStaff(staffId));
+		return ResponseEntity.ok(counterService.getCountersByStaff(staffId)); 
 	}
 
 }

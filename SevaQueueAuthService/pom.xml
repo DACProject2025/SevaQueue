@@ -109,11 +109,6 @@
 			<artifactId>jjwt-jackson</artifactId>
 			<version>0.13.0</version>
 		</dependency>
-		<dependency>
-			<groupId>com.sevaqueue</groupId>
-			<artifactId>sevaqueue-backend</artifactId>
-			<version>0.0.1</version>
-		</dependency>
 	</dependencies>
 
 	<build>

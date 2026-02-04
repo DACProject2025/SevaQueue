@@ -18,27 +18,30 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name="services")
+@Table(name = "services")
 public class OfficeService {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="service_id")
+	@Column(name = "service_id")
 	private Long serviceId;
-	
-	@Column(name="service_name", nullable = false, length = 75)
+
+	@Column(name = "service_name", nullable = false, length = 75)
 	private String serviceName;
-	
+
+	@Column(name = "description", length = 255)
+	private String description; // Optional service description
+
 	@Column(name = "avg_service_time", nullable = false)
-	private Integer avgServiceTime;   // in minutes
-	
+	private int avgServiceTime = 15; // in minutes
+
 	@ManyToOne
-	@JoinColumn(name="office_id", nullable=false)
+	@JoinColumn(name = "office_id", nullable = false)
 	private Office office;
-	
+
 	@Column(nullable = false)
 	private boolean active = true;
-	
+
 	@Column(nullable = false)
 	private int maxTokensPerDay;
 

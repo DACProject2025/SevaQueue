@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { mainApi } from '../services/api';
-import { createService, createCounter, deactivateService, deactivateOffice, getAllStaff } from '../services/adminService';
+import { createService, createCounter, deactivateOffice, fetchAllServicesByOffice, toggleServiceStatus, getAllStaff } from '../services/adminService';
 import { logInfo, logError } from '../services/loggerService';
-import { fetchServicesByOffice } from '../services/tokenService';
 
 const ManageOffice = () => {
     const { id } = useParams();
@@ -14,7 +13,7 @@ const ManageOffice = () => {
     const [showServiceForm, setShowServiceForm] = useState(false);
 
     // New Service State
-    const [newService, setNewService] = useState({ serviceName: '', description: '', avgWaitTime: 15 });
+    const [newService, setNewService] = useState({ serviceName: '', description: '', avgServiceTime: 15, maxTokensPerDay: 100 });
 
     const [staffList, setStaffList] = useState([]);
 
@@ -25,7 +24,7 @@ const ManageOffice = () => {
     const loadData = async () => {
         try {
             const officeRes = await mainApi.get(`/offices/${id}`);
-            const serviceRes = await fetchServicesByOffice(id);
+            const serviceRes = await fetchAllServicesByOffice(id);
             setOffice(officeRes.data);
             setServices(serviceRes.data);
 
@@ -42,12 +41,31 @@ const ManageOffice = () => {
         }
     };
 
+    const handleToggleService = async (service) => {
+        const nextActive = !service.active;
+        const verb = nextActive ? 'activate' : 'deactivate';
+
+        if (!window.confirm(`Are you sure you want to ${verb} "${service.serviceName}"?`)) {
+            return;
+        }
+
+        try {
+            await toggleServiceStatus(service.serviceId);
+            logInfo(`Service ${verb}d: ${service.serviceName}`);
+            loadData();
+        } catch (error) {
+            console.error(error);
+            logError(`Failed to ${verb} service: ${service.serviceName}`);
+            alert(`Failed to ${verb} service. Please try again.`);
+        }
+    };
+
     const handleCreateService = async (e) => {
         e.preventDefault();
         try {
             await createService(id, newService);
             setShowServiceForm(false);
-            setNewService({ serviceName: '', description: '', avgWaitTime: 15 });
+            setNewService({ serviceName: '', description: '', avgServiceTime: 15, maxTokensPerDay: 100 });
             loadData(); // Refresh list
             logInfo('Service created');
         } catch (error) {
@@ -95,12 +113,51 @@ const ManageOffice = () => {
             {showServiceForm && (
                 <div className="glass-card" style={{ marginBottom: '2rem', borderColor: '#8b5cf6' }}>
                     <form onSubmit={handleCreateService}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem' }}>Service Name</label>
-                        <input className="input-field" value={newService.serviceName} onChange={e => setNewService({ ...newService, serviceName: e.target.value })} required />
-
-                        <label style={{ display: 'block', marginBottom: '0.5rem' }}>Description</label>
-                        <input className="input-field" value={newService.description} onChange={e => setNewService({ ...newService, description: e.target.value })} required />
-
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem' }}>Service Name</label>
+                            <input
+                                className="input-field"
+                                value={newService.serviceName}
+                                onChange={e => setNewService({ ...newService, serviceName: e.target.value })}
+                                placeholder="e.g., Passport Application"
+                                required
+                            />
+                        </div>
+                        <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem' }}>Description (Optional)</label>
+                            <textarea
+                                className="input-field"
+                                value={newService.description || ''}
+                                onChange={e => setNewService({ ...newService, description: e.target.value })}
+                                placeholder="Brief description of what this service offers..."
+                                rows="2"
+                                style={{ resize: 'vertical', minHeight: '60px' }}
+                            />
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Average Service Time (minutes)</label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    className="input-field"
+                                    value={newService.avgServiceTime}
+                                    onChange={e => setNewService({ ...newService, avgServiceTime: parseInt(e.target.value) })}
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '0.5rem' }}>Max Tokens Per Day</label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    className="input-field"
+                                    value={newService.maxTokensPerDay}
+                                    onChange={e => setNewService({ ...newService, maxTokensPerDay: parseInt(e.target.value) })}
+                                    required
+                                />
+                            </div>
+                        </div>
                         <button className="btn">Save Service</button>
                     </form>
                 </div>
@@ -109,8 +166,44 @@ const ManageOffice = () => {
             <div className="dashboard-grid">
                 {services.map(s => (
                     <div key={s.serviceId} className="glass-card">
-                        <h4>{s.serviceName}</h4>
-                        <p>{s.description}</p>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'flex-start' }}>
+                            <div style={{ minWidth: 0 }}>
+                                <h4 style={{ marginBottom: '0.5rem' }}>{s.serviceName}</h4>
+                                <p style={{ color: '#cbd5e1', marginTop: 0 }}>{s.description || 'No description'}</p>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+                                <span style={{
+                                    padding: '0.25rem 0.75rem',
+                                    borderRadius: '999px',
+                                    fontSize: '0.75rem',
+                                    fontWeight: '700',
+                                    background: s.active ? 'rgba(34, 197, 94, 0.18)' : 'rgba(239, 68, 68, 0.18)',
+                                    color: s.active ? '#22c55e' : '#ef4444',
+                                    border: `1px solid ${s.active ? 'rgba(34, 197, 94, 0.35)' : 'rgba(239, 68, 68, 0.35)'}`
+                                }}>
+                                    {s.active ? 'ACTIVE' : 'INACTIVE'}
+                                </span>
+                                <button
+                                    className="btn"
+                                    onClick={() => handleToggleService(s)}
+                                    style={{
+                                        fontSize: '0.8rem',
+                                        padding: '0.45rem 0.75rem',
+                                        background: s.active ? 'rgba(239, 68, 68, 0.25)' : 'rgba(34, 197, 94, 0.25)',
+                                        border: `1px solid ${s.active ? 'rgba(239, 68, 68, 0.45)' : 'rgba(34, 197, 94, 0.45)'}`,
+                                        color: s.active ? '#fecaca' : '#bbf7d0'
+                                    }}
+                                >
+                                    {s.active ? 'Deactivate' : 'Activate'}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.75rem', color: '#94a3b8', fontSize: '0.85rem' }}>
+                            <span>Avg service time: <strong style={{ color: '#e2e8f0' }}>{s.avgServiceTime} min</strong></span>
+                            <span>Daily token limit: <strong style={{ color: '#e2e8f0' }}>{s.maxTokensPerDay}</strong></span>
+                        </div>
 
                         <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                             <CounterManager serviceId={s.serviceId} staffList={staffList} />

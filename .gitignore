@@ -6,6 +6,7 @@ target/
 
 =======
 SevaQueueBackend/target/
+SevaQueueBackend/hs_err_pid27360.log
 
 
 LoggerService/.vs/

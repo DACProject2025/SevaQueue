@@ -12,5 +12,7 @@ import com.sevaqueue.entity.OfficeService;
 public interface OfficeServiceRepository extends JpaRepository<OfficeService, Long> {
 
 	List<OfficeService> findByOfficeOfficeIdAndActiveTrue(Long officeId);
+
+	List<OfficeService> findByOfficeOfficeId(Long officeId);
 	
 }

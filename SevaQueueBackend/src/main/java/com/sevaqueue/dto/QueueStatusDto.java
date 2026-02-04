@@ -17,4 +17,5 @@ public class QueueStatusDto {
 	private String userTokenNumber;
 	private TokenStatus status;
 	private boolean isUserTurn;
+	private int avgServiceTime; // in minutes
 }

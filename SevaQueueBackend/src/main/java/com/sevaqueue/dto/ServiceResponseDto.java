@@ -11,10 +11,11 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ServiceResponseDto {
 
-	private Long serviceId;
+    private Long serviceId;
     private String serviceName;
+    private String description;
     private int avgServiceTime;
     private int maxTokensPerDay;
     private boolean active;
-	
+
 }

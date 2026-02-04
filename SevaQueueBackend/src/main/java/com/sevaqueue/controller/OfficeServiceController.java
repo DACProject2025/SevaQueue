@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,8 +30,15 @@ public class OfficeServiceController {
 	public ResponseEntity<List<ServiceResponseDto>> getServicesByOffice(@PathVariable Long officeId) {
 		return ResponseEntity.ok(serviceService.getServiceByOffice(officeId));
 	}
+
+	@GetMapping("/office/{officeId}/all")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<List<ServiceResponseDto>> getAllServicesByOffice(@PathVariable Long officeId) {
+		return ResponseEntity.ok(serviceService.getAllServicesByOffice(officeId));
+	}
 	
 	@PostMapping
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<ServiceResponseDto> createService(
 			@RequestParam Long officeId,
 			@RequestBody ServiceRequestDto service ) {
@@ -42,10 +50,17 @@ public class OfficeServiceController {
 	}
 	
 	@PutMapping("/{serviceId}/deactivate")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<ApiResponseDto> deactivateService(@PathVariable Long serviceId) {
 		
 		return ResponseEntity.ok(serviceService.deactivateService(serviceId));
 		
+	}
+
+	@PutMapping("/{serviceId}/toggle-status")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<ApiResponseDto> toggleServiceStatus(@PathVariable Long serviceId) {
+		return ResponseEntity.ok(serviceService.toggleServiceStatus(serviceId));
 	}
 		
 }

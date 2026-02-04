@@ -25,6 +25,14 @@ export const deactivateService = (serviceId) => {
     return mainApi.put(`/services/${serviceId}/deactivate`);
 };
 
+export const fetchAllServicesByOffice = (officeId) => {
+    return mainApi.get(`/services/office/${officeId}/all`);
+};
+
+export const toggleServiceStatus = (serviceId) => {
+    return mainApi.put(`/services/${serviceId}/toggle-status`);
+};
+
 export const createCounter = (counterData) => {
     return mainApi.post('/counter/create', counterData);
 };

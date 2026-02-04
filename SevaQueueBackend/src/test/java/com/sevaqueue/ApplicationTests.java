@@ -1,4 +1,4 @@
-package com.exam;
+package com.sevaqueue;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

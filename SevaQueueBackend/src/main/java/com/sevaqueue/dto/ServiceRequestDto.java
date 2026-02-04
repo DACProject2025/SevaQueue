@@ -10,7 +10,8 @@ import lombok.Setter;
 public class ServiceRequestDto {
 
 	private String serviceName;
+	private String description;
 	private int avgServiceTime;
 	private int maxTokensPerDay;
-	
+
 }

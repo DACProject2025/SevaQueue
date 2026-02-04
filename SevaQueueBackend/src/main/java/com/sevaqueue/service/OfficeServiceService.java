@@ -12,6 +12,10 @@ public interface OfficeServiceService {
 
 	List<ServiceResponseDto> getServiceByOffice(Long officeId);
 
+	List<ServiceResponseDto> getAllServicesByOffice(Long officeId);
+
 	ApiResponseDto deactivateService(Long serviceId);
+
+	ApiResponseDto toggleServiceStatus(Long serviceId);
 	
 }

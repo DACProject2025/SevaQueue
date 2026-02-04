@@ -15,31 +15,36 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
 
 	@Query("""
 			    SELECT t FROM Token t
-			    WHERE t.service.id = :serviceId
+			    WHERE t.service.serviceId = :serviceId
 			      AND t.status = 'CALLED'
 			    ORDER BY t.createdAt DESC
 			""")
 	List<Token> findCalledTokensByService(@Param("serviceId") Long serviceId);
 
-	// 1️ Get waiting tokens for a service (queue order)
+	// Get waiting tokens for a service (queue order)
 	@Query("""
 			    SELECT t FROM Token t
-			    WHERE t.service.id = :serviceId
+			    WHERE t.service.serviceId = :serviceId
 			      AND t.status = 'WAITING'
 			    ORDER BY t.createdAt ASC
 			""")
 	List<Token> findWaitingTokensByService(@Param("serviceId") Long serviceId);
 
-	// 2️ Get last token number for a service (daily reset)
+	// Get last token number for a service (daily reset)
 	@Query("""
 			    SELECT COALESCE(MAX(t.tokenNumber), 0)
 			    FROM Token t
-			    WHERE t.service.id = :serviceId
+			    WHERE t.service.serviceId = :serviceId
 			      AND t.createdAt >= CURRENT_DATE
 			""")
 	int findLastTokenNumber(@Param("serviceId") Long serviceId);
 
-	List<Token> findByUser(User user);
+	@Query("""
+			SELECT t FROM Token t
+			WHERE t.user = :user
+			ORDER BY t.createdAt DESC
+			""")
+	List<Token> findByUser(@Param("user") User user);
 
 	@Query("""
 			SELECT t.tokenNumber
@@ -55,11 +60,11 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
 			SELECT t FROM Token t
 			WHERE t.service.serviceId = :serviceId
 			AND DATE(t.createdAt) = CURRENT_DATE
-			ORDER BY t.createdAt
+			ORDER BY t.createdAt ASC
 			""")
-	List<Token> findTodayTokens(Long serviceId);
+	List<Token> findTodayTokens(@Param("serviceId") Long serviceId);
 
-	List<Token> findByServiceServiceIdOrderByCreatedAt(Long serviceId);
+	List<Token> findByServiceServiceIdOrderByCreatedAtDesc(Long serviceId);
 
 	@Query("""
 			SELECT COUNT(t)
@@ -67,7 +72,7 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
 			WHERE t.service.serviceId = :serviceId
 			AND DATE(t.createdAt) = CURRENT_DATE
 			""")
-	int countTodayTokens(Long serviceId);
+	int countTodayTokens(@Param("serviceId") Long serviceId);
 
 	@org.springframework.data.jpa.repository.Modifying
 	@org.springframework.transaction.annotation.Transactional
