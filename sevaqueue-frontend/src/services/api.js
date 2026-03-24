@@ -22,11 +22,11 @@ export const createApi = (baseURL) => {
     return api;
 };
 
-// Auth Service (via Nginx proxy to port 8080)
-export const authApi = createApi('/auth');
+// Auth Service on Render
+export const authApi = createApi('https://sevaqueue.onrender.com/auth');
 
-// Main Service (via Nginx proxy to port 8081)
-export const mainApi = createApi('/api');
+// Main Service on Render
+export const mainApi = createApi('https://sevaqueue-backend.onrender.com/api');
 
 // Logger Service (.NET) - Port 5090
 // Note: The Logger Service might not require JWT, but we'll include it if needed or the interceptor is harmless.
