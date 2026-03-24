@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Schools Explorer</title>
+    
+    <!-- Google Fonts for Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS for Map Rendering -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    
+    <!-- MarkerCluster CSS for Grouping Markers -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+
+    <!-- FontAwesome for Beautiful Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <style>
+        /* ---------------------------------------------------
+           Global & Core Variables
+        ---------------------------------------------------- */
+        :root {
+            --primary: #6366f1;         /* Indigo */
+            --primary-glow: #818cf8;    /* Lighter indigo for glows */
+            --bg-dark: #0f172a;         /* Slate background */
+            --glass-bg: rgba(15, 23, 42, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body, html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Prevent page scrolling, map takes full view */
+            background-color: var(--bg-dark);
+        }
+
+        /* ---------------------------------------------------
+           Map Container
+           Instruction 1: Map should occupy the full screen
+        ---------------------------------------------------- */
+        #map {
+            height: 100vh;
+            width: 100vw;
+            z-index: 1;
+        }
+
+        /* ---------------------------------------------------
+           Glassmorphism Floating Sidebar
+           Displays real-time dynamic results based on viewport
+        ---------------------------------------------------- */
+        #sidebar {
+            position: absolute;
+            top: 24px;
+            left: 24px;
+            bottom: 24px;
+            width: 360px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 24px 28px;
+            border-bottom: 1px solid var(--glass-border);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(0, 0, 0, 0));
+        }
+
+        .sidebar-header h1 {
+            color: var(--text-main);
+            font-size: 1.7rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-header h1 i {
+            color: var(--primary-glow);
+            filter: drop-shadow(0 0 8px rgba(129, 140, 248, 0.5));
+        }
+
+        .stats-pill {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(99, 102, 241, 0.2);
+            color: var(--primary-glow);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.1);
+        }
+
+        .results-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Modern Scrollbar */
+        .results-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .results-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .results-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+        }
+        .results-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* ---------------------------------------------------
+           School Cards in Sidebar
+        ---------------------------------------------------- */
+        .school-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 18px;
+            margin-bottom: 14px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideUpFade 0.4s ease forwards;
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        .school-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(99, 102, 241, 0.1);
+        }
+
+        .school-card h3 {
+            color: var(--text-main);
+            font-size: 1.15rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .school-card p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        
+        .school-card p i {
+            color: var(--primary);
+            width: 14px;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .empty-state i {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: rgba(255,255,255,0.1);
+        }
+
+        /* ---------------------------------------------------
+           Custom Map Markers
+           Instruction 2: Display schools on map using markers
+        ---------------------------------------------------- */
+        .custom-marker {
+            background: none;
+            border: none;
+            outline: none;
+        }
+
+        .marker-pin {
+            width: 42px;
+            height: 42px;
+            border-radius: 50% 50% 50% 0;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            position: absolute;
+            transform: rotate(-45deg);
+            left: 50%;
+            top: 50%;
+            margin: -21px 0 0 -21px;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .marker-pin:hover {
+            transform: rotate(-45deg) scale(1.15);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.6);
+        }
+
+        .marker-pin i {
+            transform: rotate(45deg);
+            color: white;
+            font-size: 16px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* ---------------------------------------------------
+           Cluster Marker Styling
+           Instruction 3: Group when zoomed out, show count
+        ---------------------------------------------------- */
+        .marker-cluster-custom {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.85), rgba(139, 92, 246, 0.85));
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1rem;
+            font-family: 'Outfit', sans-serif;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.7);
+            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(4px);
+        }
+
+        .marker-cluster-custom:hover {
+            transform: scale(1.15);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 1), rgba(139, 92, 246, 1));
+            border-color: white;
+            box-shadow: 0 0 35px rgba(99, 102, 241, 0.9);
+            z-index: 1000 !important;
+        }
+
+        /* ---------------------------------------------------
+           Interactive Popups
+           Instruction 5: Clicking school shows name
+        ---------------------------------------------------- */
+        .leaflet-popup-content-wrapper {
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px !important;
+            color: var(--text-main) !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+            padding: 6px !important;
+        }
+
+        .leaflet-popup-tip {
+            background: var(--glass-bg) !important;
+            border-bottom: 1px solid var(--glass-border);
+            border-right: 1px solid var(--glass-border);
+        }
+        
+        .leaflet-container a.leaflet-popup-close-button {
+            color: var(--text-muted) !important;
+            padding: 12px 14px 0 0 !important;
+            font-size: 20px !important;
+            transition: color 0.2s;
+        }
+        .leaflet-container a.leaflet-popup-close-button:hover {
+            color: white !important;
+            background: transparent !important;
+        }
+
+        .leaflet-popup-content {
+            margin: 16px 20px !important;
+            font-family: 'Outfit', sans-serif;
+            min-width: 200px;
+        }
+
+        .popup-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .popup-detail {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255,255,255,0.05);
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .popup-detail i {
+            color: var(--primary-glow);
+            width: 18px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* Miscellaneous Overrides */
+        .leaflet-control-attribution {
+            background: rgba(15, 23, 42, 0.6) !important;
+            color: var(--text-muted) !important;
+            backdrop-filter: blur(8px);
+            border-radius: 12px 0 0 0;
+            padding: 4px 8px !important;
+        }
+        .leaflet-control-attribution a {
+            color: var(--primary-glow) !important;
+            text-decoration: none;
+        }
+        
+        .leaflet-bar a {
+            background-color: var(--glass-bg) !important;
+            color: var(--text-main) !important;
+            border: 1px solid var(--glass-border) !important;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s;
+        }
+        .leaflet-bar a:hover {
+            background-color: rgba(99, 102, 241, 0.3) !important;
+            color: white !important;
+        }
+        .leaflet-control-zoom {
+            border: none !important;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4) !important;
+            border-radius: 8px !important;
+            overflow: hidden;
+        }
+
+        /* Animations */
+        @keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #sidebar {
+                bottom: 0;
+                left: 0;
+                top: auto;
+                width: 100%;
+                height: 45vh;
+                border-radius: 32px 32px 0 0;
+                border-left: none;
+                border-right: none;
+                border-bottom: none;
+            }
+            .leaflet-control-zoom {
+                margin-bottom: 48vh !important; /* Move zoom controls up */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Beautiful Overlay Panel -->
+    <div id="sidebar">
+        <div class="sidebar-header">
+            <h1><i class="fa-solid fa-graduation-cap"></i> EduFinder Maps</h1>
+            <div class="stats-pill">
+                <i class="fa-solid fa-eye" style="color: inherit; margin-right: 6px; filter: none;"></i>
+                <span id="visible-count">0</span>&nbsp;Schools in View
+            </div>
+        </div>
+        <div class="results-container" id="results">
+            <!-- Dynamic School List Generated via JS -->
+        </div>
+    </div>
+
+    <!-- Map Container -->
+    <div id="map"></div>
+
+    <!-- Leaflet & Plugin Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
+    <script>
+        /**
+         * 1. Dynamic Mock Data Generation
+         * We scatter random schools around a central point to make the demo engaging out-of-the-box.
+         */
+        const centerLat = 51.505;  // London coordinates for a great demo point
+        const centerLng = -0.09;
+        
+        const schoolTypes = ['Public High School', 'Private Academy', 'Primary School', 'International School', 'Charter Academy', 'Arts & Science Magnet'];
+        const adjectives = ['Lincoln', 'Washington', 'Oakridge', 'Maplewood', 'Pioneer', 'Summit', 'Beacon', 'Horizon', 'Crestview', 'Legacy', 'Sterling', 'Evergreen'];
+        const subjects = ['Technology', 'Arts', 'Science', 'Global Studies', 'Excellence'];
+        
+        const generateSchoolsData = (count) => {
+            const data = [];
+            for (let i = 0; i < count; i++) {
+                // Generate a wider cluster and a denser inner cluster for visual hierarchy
+                const spread = Math.random() > 0.7 ? 0.3 : 0.08;
+                const lat = centerLat + (Math.random() - 0.5) * spread * 2;
+                const lng = centerLng + (Math.random() - 0.5) * spread * 2;
+                
+                const type = schoolTypes[Math.floor(Math.random() * schoolTypes.length)];
+                const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+                const subj = Math.random() > 0.6 ? ` of ${subjects[Math.floor(Math.random() * subjects.length)]}` : '';
+                const name = `${adj} ${type}${subj}`;
+                
+                data.push({
+                    id: i,
+                    name: name,
+                    lat: lat,
+                    lng: lng,
+                    students: Math.floor(Math.random() * 2500) + 150,
+                    rating: (Math.random() * 1.5 + 3.5).toFixed(1), // 3.5 to 5.0 rating
+                    type: type.includes('Public') ? 'Public' : 'Private',
+                    established: 1950 + Math.floor(Math.random() * 70)
+                });
+            }
+            return data;
+        };
+
+        // Create 450 dummy schools
+        const schoolsData = generateSchoolsData(450);
+
+        /**
+         * 2. Initialize the Interactive Map
+         */
+        const map = L.map('map', {
+            zoomControl: false, // Relocating zoom control
+            minZoom: 3,
+            worldCopyJump: true
+        }).setView([centerLat, centerLng], 12);
+
+        // Position zoom control away from the sidebar
+        L.control.zoom({
+            position: 'bottomright'
+        }).addTo(map);
+
+        // Add a stunning dark themed tile layer (CARTO Dark Matter)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+            subdomains: 'abcd',
+            maxZoom: 20
+        }).addTo(map);
+
+
+        /**
+         * 3. Marker Clustering Setup
+         * Instruction 4 & 5: When zoomed out group toghether, when zoomed in split
+         */
+        const markers = L.markerClusterGroup({
+            // Custom HTML/CSS for the clustered group icons
+            iconCreateFunction: function(cluster) {
+                const childCount = cluster.getChildCount();
+                
+                // Dynamic sizing based on cluster size
+                let size = 45;
+                if (childCount > 15) size = 55;
+                if (childCount > 50) size = 65;
+                if (childCount > 100) size = 75;
+
+                return new L.DivIcon({ 
+                    html: `<div><span>${childCount}</span></div>`, 
+                    className: 'marker-cluster-custom', 
+                    iconSize: new L.Point(size, size) 
+                });
+            },
+            // Plugin settings
+            maxClusterRadius: 60,
+            spiderfyOnMaxZoom: true,
+            showCoverageOnHover: false,
+            zoomToBoundsOnClick: true,
+            animate: true
+        });
+
+        // HTML factory for our elegant tear-drop markers
+        const createCustomIcon = () => {
+            return L.divIcon({
+                className: 'custom-marker',
+                html: `
+                    <div class="marker-pin">
+                        <i class="fa-solid fa-school"></i>
+                    </div>
+                `,
+                iconSize: [42, 42],
+                iconAnchor: [21, 42],
+                popupAnchor: [0, -42]
+            });
+        };
+
+        // We store references to marker objects so clicking the sidebar can trigger map popups
+        const markerMap = {};
+
+        // Loop through generated data, create markers and popups
+        schoolsData.forEach(school => {
+            const marker = L.marker([school.lat, school.lng], {
+                icon: createCustomIcon()
+            });
+
+            // Beautiful custom popup markup
+            const popupContent = `
+                <div class="popup-title">${school.name}</div>
+                <div class="popup-detail">
+                    <i class="fa-solid fa-users"></i> ${school.students.toLocaleString()} Students
+                </div>
+                <div class="popup-detail">
+                    <i class="fa-solid fa-star"></i> ${school.rating} / 5.0 Rating
+                </div>
+                <div class="popup-detail">
+                    <i class="fa-solid fa-building-columns"></i> ${school.type} Institution
+                </div>
+                <div class="popup-detail">
+                    <i class="fa-solid fa-calendar-alt"></i> Est. ${school.established}
+                </div>
+            `;
+
+            marker.bindPopup(popupContent);
+
+            // Add to map dictionary and cluster group
+            markers.addLayer(marker);
+            markerMap[school.id] = marker;
+        });
+
+        // Render clusters to the map
+        map.addLayer(markers);
+
+
+        /**
+         * 4. Real-time Result Updating Logic
+         * Instruction 6: map should update results when the user moves or zooms
+         */
+        const resultsContainer = document.getElementById('results');
+        const visibleCountEl = document.getElementById('visible-count');
+
+        const updateSidebarResults = () => {
+            // Get current view boundaries
+            const bounds = map.getBounds();
+            
+            // Filter our school data based on intersection with map boundaries
+            const visibleSchools = schoolsData.filter(school => bounds.contains([school.lat, school.lng]));
+            
+            // Update counter pill
+            visibleCountEl.textContent = visibleSchools.length.toLocaleString();
+
+            // Clear previous results
+            resultsContainer.innerHTML = '';
+            
+            // Handle Empty State
+            if (visibleSchools.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                        <h3>No Schools Found</h3>
+                        <p style="margin-top: 8px;">Try zooming out or panning to a different area.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Performance: only render top 60 cards to DOM to prevent lag when viewing entire world
+            const maxDisplay = 60;
+            const schoolsToShow = visibleSchools.slice(0, maxDisplay);
+
+            schoolsToShow.forEach((school, index) => {
+                const card = document.createElement('div');
+                card.className = 'school-card';
+                // Staggered entry animation delay
+                card.style.animationDelay = `${(index % 15) * 0.04}s`; 
+                
+                card.innerHTML = `
+                    <h3>${school.name}</h3>
+                    <p><i class="fa-solid fa-users"></i> ${school.students.toLocaleString()} Students &bull; <i class="fa-solid fa-star" style="margin-left:4px; margin-right:2px; color:#fbbf24;"></i>${school.rating}</p>
+                    <p><i class="fa-solid fa-location-arrow"></i> ${school.type}</p>
+                `;
+                
+                // Clicking a card zooms into the marker
+                card.addEventListener('click', () => {
+                    const targetMarker = markerMap[school.id];
+                    
+                    // The MarkerCluster plugin's un-spiderfy zoom routine
+                    markers.zoomToShowLayer(targetMarker, function () {
+                        // After zoom completes, fire popup
+                        targetMarker.openPopup();
+                    });
+                });
+
+                resultsContainer.appendChild(card);
+            });
+            
+            // Notify user if list is truncated
+            if (visibleSchools.length > maxDisplay) {
+                const notice = document.createElement('div');
+                notice.style.color = 'var(--primary-glow)';
+                notice.style.fontSize = '0.9rem';
+                notice.style.fontWeight = '600';
+                notice.style.textAlign = 'center';
+                notice.style.padding = '12px 0';
+                notice.style.background = 'rgba(99, 102, 241, 0.1)';
+                notice.style.borderRadius = '12px';
+                notice.style.marginTop = '16px';
+                notice.innerText = `+ ${visibleSchools.length - maxDisplay} more schools... Zoom in to see more.`;
+                resultsContainer.appendChild(notice);
+            }
+        };
+
+        // Attach listeners for pan and zoom interactions
+        map.on('moveend zoomend', updateSidebarResults);
+        
+        // Initial population on page load
+        updateSidebarResults();
+
+    </script>
+</body>
+</html>

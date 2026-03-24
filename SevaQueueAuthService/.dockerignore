@@ -1,0 +1,12 @@
+# Docker ignore file - like .gitignore but for Docker builds
+target/
+*.jar
+*.war
+.idea/
+.settings/
+.classpath
+.project
+*.iml
+*.log
+.DS_Store
+Thumbs.db

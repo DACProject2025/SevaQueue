@@ -1,0 +1,176 @@
+# =================================================================
+# SevaQueue - Docker Compose Orchestration File
+# Manages ALL services: MySQL, Auth, Backend, Frontend, Logger, SQL Server
+#
+# Commands:
+#   Start all:    docker compose up -d
+#   Stop all:     docker compose down
+#   View logs:    docker compose logs -f
+#   Rebuild:      docker compose up --build -d
+# =================================================================
+
+# =================================================================
+# NETWORKS: Define isolated virtual networks
+# Services on the same network can talk using service names as DNS
+# =================================================================
+networks:
+  sevaqueue-network:
+    driver: bridge   # Default bridge network for local communication
+
+# =================================================================
+# VOLUMES: Persistent storage that survives container restarts
+# Without volumes, ALL data is lost when container stops!
+# =================================================================
+volumes:
+  mysql-data:        # MySQL database files
+  sqlserver-data:    # SQL Server database files
+
+# =================================================================
+# SERVICES: Each service = one container
+# =================================================================
+services:
+
+  # ---------------------------------------------------------------
+  # 1. MySQL Database
+  #    Used by: SevaQueueBackend, SevaQueueAuthService
+  # ---------------------------------------------------------------
+  mysql:
+    image: mysql:8.0                     # Official MySQL image from Docker Hub
+    container_name: sevaqueue-mysql
+    restart: unless-stopped              # Auto-restart unless manually stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: Prash777      # Root password (match application.properties)
+      MYSQL_DATABASE: sevaqueue          # Auto-create this database on startup
+    ports:
+      - "3307:3306"                      # host:container port mapping (3307 to avoid conflict with local MySQL)
+    volumes:
+      - mysql-data:/var/lib/mysql        # Persist data even if container is removed
+    networks:
+      - sevaqueue-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pPrash777"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ---------------------------------------------------------------
+  # 2. SQL Server (for LoggerService - .NET app)
+  # ---------------------------------------------------------------
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sevaqueue-sqlserver
+    restart: unless-stopped
+    environment:
+      SA_PASSWORD: "SevaQueue@1234"      # SQL Server requires complex password
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - sevaqueue-network
+    healthcheck:
+      # SQL Server 2022 moved sqlcmd to mssql-tools18 path
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'SevaQueue@1234' -Q 'SELECT 1' -No || exit 1"]
+      interval: 20s
+      timeout: 15s
+      retries: 5
+      start_period: 60s
+
+  # ---------------------------------------------------------------
+  # 3. SevaQueue Auth Service (Spring Boot, Port 8080)
+  # ---------------------------------------------------------------
+  sevaqueue-auth:
+    build:
+      context: ./SevaQueueAuthService    # Docker builds using Dockerfile in this dir
+      dockerfile: Dockerfile
+    container_name: sevaqueue-auth
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Override application.properties values using environment variables
+      # ${DB_HOST:-mysql} means: use DB_HOST env var, or 'mysql' as default
+      DB_HOST: mysql                     # 'mysql' = service name = DNS hostname
+      DB_PORT: 3306
+      SPRING_DATASOURCE_PASSWORD: Prash777
+      SPRING_DATASOURCE_USERNAME: root
+    depends_on:
+      mysql:
+        condition: service_started        # MySQL container started (Spring Boot handles DB retry itself)
+    networks:
+      - sevaqueue-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+  # ---------------------------------------------------------------
+  # 4. SevaQueue Backend Service (Spring Boot, Port 8081)
+  # ---------------------------------------------------------------
+  sevaqueue-backend:
+    build:
+      context: ./SevaQueueBackend
+      dockerfile: Dockerfile
+    container_name: sevaqueue-backend
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      SPRING_DATASOURCE_PASSWORD: Prash777
+      SPRING_DATASOURCE_USERNAME: root
+    depends_on:
+      mysql:
+        condition: service_started
+      sevaqueue-auth:
+        condition: service_started
+    networks:
+      - sevaqueue-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+  # ---------------------------------------------------------------
+  # 5. Logger Service (.NET 8, Port 5000)
+  # ---------------------------------------------------------------
+  sevaqueue-logger:
+    build:
+      context: ./LoggerService
+      dockerfile: Dockerfile
+    container_name: sevaqueue-logger
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      # Override the connection string for containerized SQL Server
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=LoggerDB;User Id=sa;Password=SevaQueue@1234;TrustServerCertificate=True;"
+    depends_on:
+      sqlserver:
+        condition: service_started
+    networks:
+      - sevaqueue-network
+
+  # ---------------------------------------------------------------
+  # 6. React Frontend (Nginx, Port 80)
+  # ---------------------------------------------------------------
+  sevaqueue-frontend:
+    build:
+      context: ./sevaqueue-frontend
+      dockerfile: Dockerfile
+    container_name: sevaqueue-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"                          # Access app at http://localhost
+    depends_on:
+      - sevaqueue-backend
+      - sevaqueue-auth
+    networks:
+      - sevaqueue-network

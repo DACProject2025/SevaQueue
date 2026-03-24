@@ -22,11 +22,11 @@ export const createApi = (baseURL) => {
     return api;
 };
 
-// Auth Service (Spring Boot) - Port 8080 (Default)
-export const authApi = createApi('http://localhost:8080/auth');
+// Auth Service (via Nginx proxy to port 8080)
+export const authApi = createApi('/auth');
 
-// Main Service (Spring Boot) - Port 8081
-export const mainApi = createApi('http://localhost:8081/api');
+// Main Service (via Nginx proxy to port 8081)
+export const mainApi = createApi('/api');
 
 // Logger Service (.NET) - Port 5090
 // Note: The Logger Service might not require JWT, but we'll include it if needed or the interceptor is harmless.

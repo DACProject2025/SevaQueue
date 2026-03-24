@@ -1,0 +1,22 @@
+# Docker ignore file - like .gitignore but for Docker builds
+# Files listed here are NOT sent to the Docker build context
+# This DRAMATICALLY speeds up builds and reduces image size
+
+# Compiled Java artifacts
+target/
+*.jar
+*.war
+
+# IDE files
+.idea/
+.settings/
+.classpath
+.project
+*.iml
+
+# Log files
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db

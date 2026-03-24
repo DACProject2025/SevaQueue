@@ -1,0 +1,7 @@
+# Docker ignore for .NET LoggerService
+bin/
+obj/
+*.user
+.vs/
+*.log
+.DS_Store

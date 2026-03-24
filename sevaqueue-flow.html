@@ -1,0 +1,599 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SevaQueue - Interactive Flow Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#060b14;--s1:#0d1520;--s2:#111e30;--border:#1a2d45;--a1:#6366f1;--a2:#8b5cf6;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--blue:#3b82f6;--cyan:#06b6d4;--text:#e2e8f0;--muted:#6b7280;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:"Inter",sans-serif;overflow-x:hidden;}
+/* NAV */
+nav{background:rgba(6,11,20,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:0;position:sticky;top:0;z-index:100;}
+.logo{font-size:18px;font-weight:800;background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;padding:14px 24px 14px 0;border-right:1px solid var(--border);margin-right:8px;}
+.nav-tab{padding:16px 20px;cursor:pointer;font-size:13px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;}
+.nav-tab.active{color:var(--text);border-bottom-color:var(--a1);}
+.nav-tab:hover{color:var(--text);}
+/* HERO */
+.hero{background:linear-gradient(160deg,#060b14 0%,#0d1520 60%,#120a2a 100%);padding:50px 24px 36px;text-align:center;border-bottom:1px solid var(--border);}
+.hero h1{font-size:clamp(24px,4vw,44px);font-weight:800;background:linear-gradient(135deg,#e2e8f0 0%,#a5b4fc 50%,#c084fc 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:10px;}
+.hero p{color:var(--muted);font-size:15px;margin-bottom:28px;}
+/* ARCH DIAGRAM */
+.arch-diagram{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;margin:0 auto;max-width:900px;}
+.arch-node{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:14px 20px;text-align:center;transition:all .3s;position:relative;min-width:150px;}
+.arch-node.active-node{border-color:var(--a1);box-shadow:0 0 20px rgba(99,102,241,.3);transform:translateY(-2px);}
+.arch-node.active-node .node-icon{animation:glow .6s ease-in-out infinite alternate;}
+@keyframes glow{from{filter:drop-shadow(0 0 4px rgba(99,102,241,.6))}to{filter:drop-shadow(0 0 12px rgba(99,102,241,1))}}
+.node-icon{font-size:26px;margin-bottom:6px;display:block;}
+.node-name{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.node-port{font-size:10px;color:var(--muted);margin-top:3px;}
+.arch-arrow{display:flex;align-items:center;padding:0 6px;color:var(--muted);font-size:18px;position:relative;min-width:40px;justify-content:center;}
+.arch-arrow .packet{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--a1);opacity:0;top:50%;transform:translateY(-50%);}
+.arch-arrow .packet.animate-right{animation:flyRight 0.8s ease-in-out forwards;}
+.arch-arrow .packet.animate-left{animation:flyLeft 0.8s ease-in-out forwards;}
+@keyframes flyRight{0%{left:0;opacity:1}100%{left:100%;opacity:0}}
+@keyframes flyLeft{0%{left:100%;opacity:1}100%{left:0;opacity:0}}
+/* PANELS */
+.panels{max-width:1100px;margin:0 auto;padding:32px 20px;}
+.panel{display:none;}
+.panel.active{display:block;}
+/* SCENARIO CARDS */
+.scenario{background:var(--s1);border:1px solid var(--border);border-radius:16px;margin-bottom:20px;overflow:hidden;}
+.scenario-header{padding:18px 22px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border);}
+.sc-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+.sc-title{flex:1;font-weight:600;font-size:15px;}
+.sc-method{padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;margin-right:6px;}
+.GET{background:rgba(16,185,129,.2);color:#34d399;}
+.POST{background:rgba(99,102,241,.2);color:#a5b4fc;}
+.PUT{background:rgba(245,158,11,.2);color:#fcd34d;}
+.play-btn{background:linear-gradient(135deg,var(--a1),var(--a2));border:none;color:#fff;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;white-space:nowrap;}
+.play-btn:hover{transform:scale(1.04);box-shadow:0 4px 15px rgba(99,102,241,.4);}
+.play-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+/* FLOW VISUALIZER */
+.flow-viz{padding:22px;display:none;}
+.flow-viz.visible{display:block;}
+.flow-steps-track{display:flex;flex-direction:column;gap:12px;}
+.flow-step{display:flex;align-items:flex-start;gap:14px;opacity:.3;transition:all .4s;}
+.flow-step.active-step{opacity:1;}
+.flow-step.done-step{opacity:.7;}
+.step-dot{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:all .4s;background:var(--bg);}
+.flow-step.active-step .step-dot{border-color:var(--a1);background:var(--a1);box-shadow:0 0 15px rgba(99,102,241,.5);}
+.flow-step.done-step .step-dot{border-color:var(--green);background:var(--green);}
+.step-content{flex:1;}
+.step-label{font-size:13px;font-weight:600;margin-bottom:6px;}
+.step-detail{font-size:12px;color:var(--muted);line-height:1.6;font-family:"Fira Code",monospace;}
+.step-detail.highlight{color:var(--text);background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-top:6px;white-space:pre-wrap;}
+/* REQUEST/RESPONSE BOX */
+.req-res{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px;}
+@media(max-width:700px){.req-res{grid-template-columns:1fr;}}
+.rbox{border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+.rbox-head{padding:8px 14px;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;display:flex;align-items:center;gap:6px;}
+.rbox-body{padding:14px;font-family:"Fira Code",monospace;font-size:12px;line-height:1.7;background:#0d1117;overflow-x:auto;}
+.rbox-req .rbox-head{background:rgba(99,102,241,.15);color:#a5b4fc;}
+.rbox-res .rbox-head{background:rgba(16,185,129,.15);color:#34d399;}
+.rbox-code .rbox-head{background:rgba(139,92,246,.15);color:#c084fc;}
+/* JWT VISUALIZER */
+.jwt-viz{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:14px;}
+.jwt-parts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;}
+@media(max-width:600px){.jwt-parts{grid-template-columns:1fr;}}
+.jwt-part{border-radius:8px;padding:14px;font-family:"Fira Code",monospace;font-size:12px;line-height:1.6;}
+.jwt-header{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);}
+.jwt-payload{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);}
+.jwt-sig{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);}
+.jwt-part-title{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;}
+.jwt-header .jwt-part-title{color:#fca5a5;}
+.jwt-payload .jwt-part-title{color:#a5b4fc;}
+.jwt-sig .jwt-part-title{color:#34d399;}
+/* SECURITY FILTER CHAIN */
+.filter-chain{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+.filter-step{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;font-size:13px;transition:all .3s;}
+.filter-step.filter-active{border-color:var(--a1);background:rgba(99,102,241,.08);}
+.filter-step.filter-pass{border-color:var(--green);background:rgba(16,185,129,.05);}
+.filter-step.filter-deny{border-color:var(--red);background:rgba(239,68,68,.05);}
+.filter-icon{font-size:18px;width:28px;text-align:center;flex-shrink:0;}
+/* QUEUE VIZ */
+.queue-viz{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;min-height:60px;align-items:center;}
+.q-token{background:var(--s2);border:2px solid var(--border);border-radius:8px;padding:10px 14px;text-align:center;transition:all .4s;font-weight:600;font-size:13px;}
+.q-token.q-waiting{border-color:var(--a1);color:#a5b4fc;}
+.q-token.q-called{border-color:var(--yellow);color:#fcd34d;animation:pulse-yellow .8s infinite alternate;}
+.q-token.q-served{border-color:var(--green);color:#34d399;opacity:.6;}
+.q-token.q-yours{border-color:var(--cyan);color:#67e8f9;box-shadow:0 0 12px rgba(6,182,212,.3);}
+@keyframes pulse-yellow{from{box-shadow:0 0 6px rgba(245,158,11,.3)}to{box-shadow:0 0 16px rgba(245,158,11,.6)}}
+.q-arrow{color:var(--muted);font-size:16px;}
+/* STATUS CHIPS */
+.chip{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:600;margin:2px;}
+.chip-green{background:rgba(16,185,129,.15);color:#34d399;}
+.chip-purple{background:rgba(99,102,241,.15);color:#a5b4fc;}
+.chip-yellow{background:rgba(245,158,11,.15);color:#fcd34d;}
+.chip-red{background:rgba(239,68,68,.15);color:#fca5a5;}
+.chip-cyan{background:rgba(6,182,212,.15);color:#67e8f9;}
+/* SMS */
+.sms-notif{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:10px 14px;font-size:12px;display:flex;gap:8px;align-items:flex-start;margin-top:8px;}
+/* COLOR SYNTAX */
+.kw{color:#ff79c6;} .str{color:#f1fa8c;} .ann{color:#50fa7b;} .com{color:#6272a4;font-style:italic;} .num{color:#bd93f9;} .cls{color:#8be9fd;} .fn{color:#50fa7b;}
+/* INFO */
+.info{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.6;margin-top:8px;}
+.info strong{color:#93c5fd;}
+.warn{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.6;margin-top:8px;}
+.warn strong{color:#fcd34d;}
+/* SCHED */
+.sched-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;}
+.sched-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.sched-cron{font-family:"Fira Code",monospace;font-size:12px;color:#50fa7b;background:#0d1117;padding:4px 10px;border-radius:6px;display:inline-block;margin-top:8px;}
+/* SECTION LABEL */
+.sec-label{font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--a1);margin-bottom:6px;}
+h2{font-size:20px;font-weight:700;margin-bottom:6px;}
+.sub{color:var(--muted);font-size:14px;margin-bottom:24px;}
+hr.divider{border:none;border-top:1px solid var(--border);margin:24px 0;}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">SevaQueue</div>
+  <div class="nav-tab active" onclick="showPanel('citizen',this)">Citizen</div>
+  <div class="nav-tab" onclick="showPanel('staff',this)">Staff / Counter</div>
+  <div class="nav-tab" onclick="showPanel('admin',this)">Admin</div>
+  <div class="nav-tab" onclick="showPanel('security',this)">Security</div>
+  <div class="nav-tab" onclick="showPanel('scheduler',this)">Scheduler</div>
+</nav>
+<div class="hero">
+  <h1>SevaQueue — Interactive Flow Simulator</h1>
+  <p>Click "Simulate" on any step to watch the request travel through the system in real time</p>
+  <div class="arch-diagram" id="archDiagram">
+    <div class="arch-node" id="node-frontend"><span class="node-icon">&#128187;</span><div class="node-name">React Frontend</div><div class="node-port">:5173</div></div>
+    <div class="arch-arrow"><span>&#8594;</span><div class="packet" id="pkt1"></div></div>
+    <div class="arch-node" id="node-auth"><span class="node-icon">&#128274;</span><div class="node-name">Auth Service</div><div class="node-port">:8080</div></div>
+    <div class="arch-arrow"><span>&#8594;</span><div class="packet" id="pkt2"></div></div>
+    <div class="arch-node" id="node-backend"><span class="node-icon">&#9881;</span><div class="node-name">Backend Service</div><div class="node-port">:8081</div></div>
+    <div class="arch-arrow"><span>&#8594;</span><div class="packet" id="pkt3"></div></div>
+    <div class="arch-node" id="node-logger"><span class="node-icon">&#128203;</span><div class="node-name">Logger (.NET)</div><div class="node-port">:5090</div></div>
+  </div>
+</div>
+<div class="panels">
+<!-- CITIZEN PANEL -->
+<div id="citizen" class="panel active">
+<h2>Citizen Journey</h2><div class="sub">Register, login, get a token and track the queue — click Simulate on each step!</div>
+
+<!-- REGISTER -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="sc-num" style="background:rgba(99,102,241,.2);color:#a5b4fc;">1</div>
+    <span class="sc-method POST">POST</span>
+    <div class="sc-title">Register as Citizen — <code style="color:var(--muted);font-size:12px">/auth/register</code></div>
+    <button class="play-btn" onclick="simulate('reg')">&#9654; Simulate</button>
+  </div>
+  <div class="flow-viz visible">
+    <div class="req-res">
+      <div class="rbox rbox-req">
+        <div class="rbox-head">&#128228; Request Body</div>
+        <div class="rbox-body">{ <span class="str">"name"</span>: <span class="str">"Prashant"</span>,<br>  <span class="str">"email"</span>: <span class="str">"p@gmail.com"</span>,<br>  <span class="str">"password"</span>: <span class="str">"Pass@1234"</span>,<br>  <span class="str">"mobile"</span>: <span class="str">"9876543210"</span> }</div>
+      </div>
+      <div class="rbox rbox-code">
+        <div class="rbox-head">&#9881; UserServiceImpl.java</div>
+        <div class="rbox-body"><span class="cls">User</span> user = modelMapper.<span class="fn">map</span>(dto, <span class="cls">User</span>.<span class="kw">class</span>);<br>user.<span class="fn">setPassword</span>(passwordEncoder.<span class="fn">encode</span>(dto.<span class="fn">getPassword</span>()));<br>user.<span class="fn">setRole</span>(<span class="cls">Role</span>.CITIZEN); <span class="com">// always default</span><br><span class="kw">return</span> userRepository.<span class="fn">save</span>(user);</div>
+      </div>
+    </div>
+    <div id="reg-flow" class="filter-chain" style="margin-top:14px;display:none;">
+      <div class="filter-step" id="reg-s1"><div class="filter-icon">&#128187;</div><div>Frontend sends POST to <strong>http://localhost:8080/auth/register</strong></div></div>
+      <div class="filter-step" id="reg-s2"><div class="filter-icon">&#128274;</div><div>Auth Service receives request — checks if email already exists in DB</div></div>
+      <div class="filter-step" id="reg-s3"><div class="filter-icon">&#128272;</div><div>BCrypt hashes the password — original never stored</div></div>
+      <div class="filter-step" id="reg-s4"><div class="filter-icon">&#128190;</div><div>User saved to MySQL <strong>users</strong> table with role = CITIZEN</div></div>
+      <div class="filter-step" id="reg-s5"><div class="filter-icon">&#9989;</div><div>200 OK — User object returned. Registration complete!</div></div>
+    </div>
+    <div class="rbox rbox-res" style="margin-top:12px">
+      <div class="rbox-head">&#128229; Response (200 OK)</div>
+      <div class="rbox-body">{ <span class="str">"id"</span>: <span class="num">42</span>, <span class="str">"name"</span>: <span class="str">"Prashant"</span>,<br>  <span class="str">"role"</span>: <span class="str">"CITIZEN"</span>, <span class="str">"createdAt"</span>: <span class="str">"2026-02-27"</span> }</div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN + JWT -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="sc-num" style="background:rgba(139,92,246,.2);color:#c084fc;">2</div>
+    <span class="sc-method POST">POST</span>
+    <div class="sc-title">Login — JWT Token Generated — <code style="color:var(--muted);font-size:12px">/auth/login</code></div>
+    <button class="play-btn" onclick="simulate('login')">&#9654; Simulate</button>
+  </div>
+  <div class="flow-viz visible">
+    <div class="req-res">
+      <div class="rbox rbox-req">
+        <div class="rbox-head">&#128228; Request</div>
+        <div class="rbox-body">{ <span class="str">"email"</span>: <span class="str">"p@gmail.com"</span>,<br>  <span class="str">"password"</span>: <span class="str">"Pass@1234"</span> }</div>
+      </div>
+      <div class="rbox rbox-code">
+        <div class="rbox-head">&#9881; JwtUtils.java — generateToken()</div>
+        <div class="rbox-body">Jwts.<span class="fn">builder</span>()<br>  .<span class="fn">subject</span>(email) <span class="com">// p@gmail.com</span><br>  .<span class="fn">expiration</span>(new Date(now + jwtExpTime))<br>  .<span class="fn">claims</span>(Map.of(<span class="str">"userId"</span>,<span class="num">42</span>, <span class="str">"role"</span>,<span class="str">"CITIZEN"</span>))<br>  .<span class="fn">signWith</span>(secretKey) <span class="com">// HMAC-SHA</span><br>  .<span class="fn">compact</span>();</div>
+      </div>
+    </div>
+    <div id="login-flow" style="display:none;margin-top:14px;">
+      <div class="filter-chain">
+        <div class="filter-step" id="login-s1"><div class="filter-icon">&#128187;</div><div>Frontend: authApi.post('/login', {email, password})</div></div>
+        <div class="filter-step" id="login-s2"><div class="filter-icon">&#128274;</div><div>AuthenticationManager.authenticate() — Spring Security validates credentials</div></div>
+        <div class="filter-step" id="login-s3"><div class="filter-icon">&#128272;</div><div>BCrypt.matches(rawPass, storedHash) — password verified</div></div>
+        <div class="filter-step" id="login-s4"><div class="filter-icon">&#127381;</div><div>JWT built: Header + Payload(userId,role,email) + HMAC-SHA Signature</div></div>
+        <div class="filter-step" id="login-s5"><div class="filter-icon">&#128190;</div><div>localStorage.setItem('token', jwt) — stored in browser</div></div>
+        <div class="filter-step" id="login-s6"><div class="filter-icon">&#9989;</div><div>Every future request auto-sends: Authorization: Bearer &lt;jwt&gt;</div></div>
+      </div>
+      <div class="jwt-viz" style="margin-top:14px;">
+        <div class="sec-label">JWT Token — 3 Parts (click to inspect)</div>
+        <div class="jwt-parts">
+          <div class="jwt-part jwt-header"><div class="jwt-part-title">Header (red)</div>{ "alg": "HS256",<br>"typ": "JWT" }</div>
+          <div class="jwt-part jwt-payload"><div class="jwt-part-title">Payload (purple)</div>{ "sub": "p@gmail.com",<br>"userId": 42,<br>"role": "CITIZEN",<br>"iat": 1709041200,<br>"exp": 1709044800 }</div>
+          <div class="jwt-part jwt-sig"><div class="jwt-part-title">Signature (green)</div>HMACSHA256(<br>base64(header) +<br>"." + base64(payload),<br>secretKey<br>)</div>
+        </div>
+      </div>
+    </div>
+    <div class="rbox rbox-res" style="margin-top:12px">
+      <div class="rbox-head">&#128229; Response — Stored in localStorage</div>
+      <div class="rbox-body">{ <span class="str">"accessToken"</span>: <span class="str">"eyJhbGciOiJIUzI1NiJ9..."</span>,<br>  <span class="str">"userId"</span>: <span class="num">42</span>, <span class="str">"role"</span>: <span class="str">"CITIZEN"</span> }</div>
+    </div>
+  </div>
+</div>
+
+<!-- GENERATE TOKEN -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="sc-num" style="background:rgba(16,185,129,.2);color:#34d399;">3</div>
+    <span class="sc-method POST">POST</span>
+    <div class="sc-title">Generate Queue Token — <code style="color:var(--muted);font-size:12px">/api/tokens/generate-token?serviceId=5</code></div>
+    <button class="play-btn" onclick="simulate('gentoken')">&#9654; Simulate</button>
+  </div>
+  <div class="flow-viz visible">
+    <div class="warn"><strong>7 validations</strong> happen inside TokenServiceImpl before a token is issued. Simulate to see each one!</div>
+    <div id="gentoken-flow" style="display:none;margin-top:14px;">
+      <div class="filter-chain">
+        <div class="filter-step" id="gt-s1"><div class="filter-icon">&#128187;</div><div>mainApi.post('/tokens/generate-token?serviceId=5') — JWT auto-attached</div></div>
+        <div class="filter-step" id="gt-s2"><div class="filter-icon">&#128272;</div><div>JwtAuthenticationFilter validates JWT → extracts userId=42, role=CITIZEN</div></div>
+        <div class="filter-step" id="gt-s3"><div class="filter-icon">&#128197;</div><div>Check 1: Is today Sunday? → No → Continue</div></div>
+        <div class="filter-step" id="gt-s4"><div class="filter-icon">&#9989;</div><div>Check 2: Is service active? → Yes → Continue</div></div>
+        <div class="filter-step" id="gt-s5"><div class="filter-icon">&#128336;</div><div>Check 3: Is now between openTime(9:00) and closeTime(17:00)? → Yes → Continue</div></div>
+        <div class="filter-step" id="gt-s6"><div class="filter-icon">&#128203;</div><div>Check 4: Does user already have WAITING/CALLED token? → No → Continue</div></div>
+        <div class="filter-step" id="gt-s7"><div class="filter-icon">&#127981;</div><div>Check 5: Any counters OPEN for this service? → Yes → Continue</div></div>
+        <div class="filter-step" id="gt-s8"><div class="filter-icon">&#128220;</div><div>Check 6: Today token count &lt; maxTokensPerDay(100)? → Yes → Continue</div></div>
+        <div class="filter-step" id="gt-s9"><div class="filter-icon">&#127381;</div><div>Token created: tokenNumber = lastToken(13) + 1 = <strong>14</strong>, status = WAITING</div></div>
+        <div class="filter-step" id="gt-s10"><div class="filter-icon">&#128241;</div><div>SMS sent: "Your token #14 for Aadhaar Update has been generated!"</div></div>
+        <div class="filter-step" id="gt-s11"><div class="filter-icon">&#9989;</div><div>Response returned with tokenId, tokenNumber=14, status=WAITING</div></div>
+      </div>
+      <div class="sms-notif">&#128241; <div><strong style="color:#fcd34d">SMS Notification:</strong> "Hello Prashant, your token <strong>#14</strong> for Aadhaar Update has been generated successfully. Please wait for your turn."</div></div>
+    </div>
+    <div class="rbox rbox-res" style="margin-top:12px">
+      <div class="rbox-head">&#128229; Response</div>
+      <div class="rbox-body">{ <span class="str">"tokenId"</span>: <span class="num">101</span>, <span class="str">"tokenNumber"</span>: <span class="num">14</span>,<br>  <span class="str">"status"</span>: <span class="str">"WAITING"</span>,<br>  <span class="str">"serviceName"</span>: <span class="str">"Aadhaar Update"</span>,<br>  <span class="str">"officeName"</span>: <span class="str">"District Collectorate"</span> }</div>
+    </div>
+  </div>
+</div>
+
+<!-- QUEUE STATUS -->
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="sc-num" style="background:rgba(6,182,212,.2);color:#67e8f9;">4</div>
+    <span class="sc-method GET">GET</span>
+    <div class="sc-title">Track Queue Position — <code style="color:var(--muted);font-size:12px">/api/tokens/101/queue-status</code></div>
+    <button class="play-btn" onclick="simulate('queue')">&#9654; Simulate</button>
+  </div>
+  <div class="flow-viz visible">
+    <div class="info"><strong>Live Queue Visualization:</strong> You are token #14. Click Simulate to see your position in the queue!</div>
+    <div id="queue-flow" style="display:none;margin-top:14px;">
+      <div class="sec-label" style="margin-bottom:8px;">Current Queue for Aadhaar Update Service</div>
+      <div class="queue-viz" id="queueViz"></div>
+      <div id="queue-status-box" style="margin-top:12px;"></div>
+    </div>
+    <div class="rbox rbox-res" style="margin-top:12px">
+      <div class="rbox-head">&#128229; Response</div>
+      <div class="rbox-body">{ <span class="str">"currentServing"</span>: <span class="str">"11"</span>,<br>  <span class="str">"yourToken"</span>: <span class="str">"14"</span>,<br>  <span class="str">"ahead"</span>: <span class="num">2</span>,<br>  <span class="str">"status"</span>: <span class="str">"WAITING"</span>,<br>  <span class="str">"isYourTurn"</span>: <span class="kw">false</span>,<br>  <span class="str">"avgServiceTime"</span>: <span class="num">15</span> }</div>
+    </div>
+  </div>
+</div>
+
+</div>
+<!-- SECURITY PANEL -->
+<div id="security" class="panel">
+<h2>Security — JWT Filter Chain</h2><div class="sub">Watch how every request passes through Spring Securitys filter chain before reaching your controller</div>
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="sc-num" style="background:rgba(239,68,68,.2);color:#fca5a5;">&#128274;</div>
+    <div class="sc-title">JwtAuthenticationFilter — Runs on EVERY request to :8081</div>
+    <button class="play-btn" id="secBtn" onclick="simulateSecurity('valid')">&#9654; Simulate Valid JWT</button>
+    <button class="play-btn" style="background:linear-gradient(135deg,#ef4444,#b91c1c);margin-left:8px;" onclick="simulateSecurity('invalid')">&#9654; Invalid JWT</button>
+  </div>
+  <div class="flow-viz visible">
+    <div class="req-res">
+      <div class="rbox rbox-code">
+        <div class="rbox-head">&#9881; JwtAuthenticationFilter.java</div>
+        <div class="rbox-body"><span class="kw">String</span> authHeader = request.<span class="fn">getHeader</span>(<span class="str">"Authorization"</span>);<br><span class="com">// "Bearer eyJhbGc..."</span><br><br><span class="kw">if</span> (authHeader != <span class="kw">null</span> &amp;&amp; authHeader.<span class="fn">startsWith</span>(<span class="str">"Bearer "</span>)) {<br>  <span class="kw">String</span> token = authHeader.<span class="fn">substring</span>(<span class="num">7</span>);<br>  <span class="cls">UserPrincipal</span> principal = jwtUtils.<span class="fn">getUserFromToken</span>(token);<br>  <span class="com">// sets SecurityContextHolder</span><br>  <span class="cls">SecurityContextHolder</span>.getContext().<br>    <span class="fn">setAuthentication</span>(authentication);<br>}</div>
+      </div>
+      <div class="rbox rbox-code">
+        <div class="rbox-head">&#9881; SecurityConfig.java</div>
+        <div class="rbox-body"><span class="ann">@EnableWebSecurity</span><br><span class="ann">@EnableMethodSecurity</span> <span class="com">// for @PreAuthorize</span><br><br>http.<span class="fn">sessionManagement</span>(<br>  s -> s.<span class="fn">sessionCreationPolicy</span>(<span class="cls">STATELESS</span>))<br>.<span class="fn">csrf</span>(csrf -> csrf.<span class="fn">disable</span>())<br>.<span class="fn">addFilterBefore</span>(jwtAuthFilter,<br>  <span class="cls">UsernamePasswordAuthenticationFilter</span>.<span class="kw">class</span>);<br><br><span class="com">// BCrypt password encoder bean</span><br><span class="ann">@Bean</span> <span class="cls">PasswordEncoder</span> <span class="fn">passwordEncoder</span>() {<br>  <span class="kw">return new</span> <span class="cls">BCryptPasswordEncoder</span>();}</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;"><div class="sec-label">Filter Chain Execution</div></div>
+    <div class="filter-chain" id="secFilterChain" style="margin-top:8px;">
+      <div class="filter-step" id="sec-s1"><div class="filter-icon">&#128228;</div><div><strong>Incoming Request:</strong> POST /api/tokens/generate-token — Authorization: Bearer eyJhbGc...</div></div>
+      <div class="filter-step" id="sec-s2"><div class="filter-icon">&#128274;</div><div><strong>JwtAuthenticationFilter</strong> intercepts — extracts token from header</div></div>
+      <div class="filter-step" id="sec-s3"><div class="filter-icon">&#128272;</div><div><strong>JwtUtils.validateToken()</strong> — verifies HMAC-SHA signature with secretKey</div></div>
+      <div class="filter-step" id="sec-s4"><div class="filter-icon">&#128100;</div><div><strong>getUserFromToken()</strong> — extracts userId=42, email, role=CITIZEN from claims</div></div>
+      <div class="filter-step" id="sec-s5"><div class="filter-icon">&#128196;</div><div><strong>SecurityContextHolder.setAuthentication()</strong> — user identity stored for this request</div></div>
+      <div class="filter-step" id="sec-s6"><div class="filter-icon">&#127919;</div><div><strong>@PreAuthorize check</strong> — e.g. hasRole(STAFF)?  CITIZEN role → 403 Forbidden</div></div>
+      <div class="filter-step" id="sec-s7"><div class="filter-icon">&#9989;</div><div><strong>Controller reached</strong> — @AuthenticationPrincipal UserPrincipal principal injected</div></div>
+    </div>
+    <div id="sec-result" style="margin-top:12px;display:none;"></div>
+  </div>
+</div>
+
+<!-- ROLE MATRIX -->
+<div class="scenario" style="margin-top:20px;">
+  <div class="scenario-header">
+    <div class="sc-num" style="background:rgba(245,158,11,.2);color:#fcd34d;">&#128204;</div>
+    <div class="sc-title">Role-Based Access Control Matrix</div>
+  </div>
+  <div class="flow-viz visible">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead><tr style="border-bottom:1px solid var(--border);">
+        <th style="text-align:left;padding:10px;color:var(--muted)">Endpoint</th>
+        <th style="padding:10px;text-align:center;">CITIZEN</th>
+        <th style="padding:10px;text-align:center;">STAFF</th>
+        <th style="padding:10px;text-align:center;">ADMIN</th>
+      </tr></thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px;font-family:Fira Code,monospace;font-size:12px">POST /auth/register</td><td style="text-align:center">&#9989;</td><td style="text-align:center">&#9989;</td><td style="text-align:center">&#9989;</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px;font-family:Fira Code,monospace;font-size:12px">POST /auth/register-staff</td><td style="text-align:center">&#10060;</td><td style="text-align:center">&#10060;</td><td style="text-align:center">&#9989;</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px;font-family:Fira Code,monospace;font-size:12px">POST /api/tokens/generate-token</td><td style="text-align:center">&#9989;</td><td style="text-align:center">&#9989;</td><td style="text-align:center">&#9989;</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px;font-family:Fira Code,monospace;font-size:12px">POST /api/tokens/call-next</td><td style="text-align:center">&#10060;</td><td style="text-align:center">&#9989;</td><td style="text-align:center">&#9989;</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px;font-family:Fira Code,monospace;font-size:12px">PUT /api/tokens/{id}/status</td><td style="text-align:center">&#10060;</td><td style="text-align:center">&#9989;</td><td style="text-align:center">&#9989;</td></tr>
+        <tr style="border-bottom:1px solid var(--border);"><td style="padding:10px;font-family:Fira Code,monospace;font-size:12px">PUT /api/counter/{id}/status</td><td style="text-align:center">&#10060;</td><td style="text-align:center">&#9989;</td><td style="text-align:center">&#9989;</td></tr>
+        <tr><td style="padding:10px;font-family:Fira Code,monospace;font-size:12px">POST /api/counter/assign</td><td style="text-align:center">&#10060;</td><td style="text-align:center">&#10060;</td><td style="text-align:center">&#9989;</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- STAFF PANEL -->
+<div id="staff" class="panel">
+<h2>Staff / Counter Authority</h2><div class="sub">Staff opens counters, calls next token in FIFO order, marks citizens as served</div>
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="sc-num" style="background:rgba(16,185,129,.2);color:#34d399;">1</div>
+    <span class="sc-method POST">POST</span>
+    <div class="sc-title">Call Next Token — FIFO Queue — <code style="color:var(--muted);font-size:12px">/api/tokens/call-next</code></div>
+    <button class="play-btn" onclick="simulate('callnext')">&#9654; Simulate</button>
+  </div>
+  <div class="flow-viz visible">
+    <div class="info"><strong>FIFO = First In, First Out.</strong> The citizen who generated a token earliest gets called first. This is enforced by ordering tokens by <code>createdAt ASC</code> in the JPQL query.</div>
+    <div id="callnext-flow" style="display:none;margin-top:14px;">
+      <div class="sec-label">Token Queue — Before Call Next</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;" id="beforeQueue">
+        <div class="q-token q-served">#11 SERVED</div>
+        <div class="q-arrow">&#8594;</div>
+        <div class="q-token q-waiting" id="q12">#12 WAITING</div>
+        <div class="q-arrow">&#8594;</div>
+        <div class="q-token q-waiting">#13 WAITING</div>
+        <div class="q-arrow">&#8594;</div>
+        <div class="q-token q-waiting">#14 WAITING</div>
+      </div>
+      <div class="filter-chain">
+        <div class="filter-step" id="cn-s1"><div class="filter-icon">&#128274;</div><div>JWT validated → role = STAFF confirmed by @PreAuthorize("hasRole(STAFF)")</div></div>
+        <div class="filter-step" id="cn-s2"><div class="filter-icon">&#127981;</div><div>Counter #3 found → status checked: must be OPEN (not CLOSED)</div></div>
+        <div class="filter-step" id="cn-s3"><div class="filter-icon">&#128203;</div><div>findWaitingTokensByService(serviceId=5) → ordered by createdAt ASC → returns [#12, #13, #14]</div></div>
+        <div class="filter-step" id="cn-s4"><div class="filter-icon">&#128204;</div><div>waitingTokens.get(0) = Token #12 → setStatus(CALLED) → saved</div></div>
+        <div class="filter-step" id="cn-s5"><div class="filter-icon">&#128241;</div><div>SMS sent to citizen: "Your token #12 is now CALLED. Proceed to counter!"</div></div>
+      </div>
+      <div class="sec-label" style="margin-top:14px;">Queue — After Call Next</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center;">
+        <div class="q-token q-served">#11 SERVED</div>
+        <div class="q-arrow">&#8594;</div>
+        <div class="q-token q-called">#12 CALLED</div>
+        <div class="q-arrow">&#8594;</div>
+        <div class="q-token q-waiting">#13 WAITING</div>
+        <div class="q-arrow">&#8594;</div>
+        <div class="q-token q-yours">#14 (you) 2 ahead</div>
+      </div>
+      <div class="sms-notif" style="margin-top:10px;">&#128241; <div><strong style="color:#fcd34d">SMS:</strong> "Hello Sunita, your token #12 for Aadhaar Update is now CALLED. Please proceed to the counter."</div></div>
+    </div>
+    <div class="req-res" style="margin-top:12px">
+      <div class="rbox rbox-req"><div class="rbox-head">&#128228; Request</div><div class="rbox-body">POST /api/tokens/call-next<br>?serviceId=5&amp;counterId=3<br>Authorization: Bearer &lt;STAFF JWT&gt;</div></div>
+      <div class="rbox rbox-res"><div class="rbox-head">&#128229; Response</div><div class="rbox-body">{ <span class="str">"tokenNumber"</span>: <span class="num">12</span>,<br>  <span class="str">"status"</span>: <span class="str">"CALLED"</span>,<br>  <span class="str">"serviceName"</span>: <span class="str">"Aadhaar Update"</span> }</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="admin" class="panel">
+<h2>Admin Dashboard</h2><div class="sub">Admin creates offices, adds services, assigns counters, registers staff</div>
+<div class="scenario">
+  <div class="scenario-header">
+    <div class="sc-num" style="background:rgba(239,68,68,.2);color:#fca5a5;">1</div>
+    <span class="sc-method POST">POST</span>
+    <div class="sc-title">Register Staff — Admin Only — <code style="color:var(--muted);font-size:12px">/auth/register-staff</code></div>
+    <button class="play-btn" onclick="simulate('regstaff')">&#9654; Simulate</button>
+  </div>
+  <div class="flow-viz visible">
+    <div id="regstaff-flow" style="display:none;margin-top:14px;">
+      <div class="filter-chain">
+        <div class="filter-step" id="rs-s1"><div class="filter-icon">&#128274;</div><div>JWT decoded — role = ADMIN verified by @PreAuthorize("hasRole(ADMIN)")</div></div>
+        <div class="filter-step" id="rs-s2"><div class="filter-icon">&#9989;</div><div>Role check PASSED — controller method executes</div></div>
+        <div class="filter-step" id="rs-s3"><div class="filter-icon">&#128272;</div><div>Password BCrypt encoded — role hardcoded to STAFF (cannot be overridden)</div></div>
+        <div class="filter-step" id="rs-s4"><div class="filter-icon">&#128190;</div><div>New STAFF user saved to users table</div></div>
+      </div>
+    </div>
+    <div class="req-res" style="margin-top:12px">
+      <div class="rbox rbox-req"><div class="rbox-head">&#128228; Request (ADMIN JWT required)</div><div class="rbox-body">POST /auth/register-staff<br>Authorization: Bearer &lt;ADMIN JWT&gt;<br><br>{ <span class="str">"name"</span>: <span class="str">"Ravi Kumar"</span>,<br>  <span class="str">"email"</span>: <span class="str">"ravi@gov.in"</span>,<br>  <span class="str">"password"</span>: <span class="str">"Staff@123"</span> }</div></div>
+      <div class="rbox rbox-res"><div class="rbox-head">&#128229; Response</div><div class="rbox-body">{ <span class="str">"id"</span>: <span class="num">7</span>,<br>  <span class="str">"name"</span>: <span class="str">"Ravi Kumar"</span>,<br>  <span class="str">"role"</span>: <span class="str">"STAFF"</span> }<br><span class="com">// if CITIZEN tries → 403 Forbidden</span></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SCHEDULER PANEL -->
+<div id="scheduler" class="panel">
+<h2>Automated Scheduler</h2><div class="sub">Three background jobs run automatically — no manual trigger needed</div>
+<div class="sched-grid">
+  <div class="sched-card"><div style="font-size:30px;margin-bottom:12px">&#128347;</div><h4 style="margin-bottom:6px">Expire Old Tokens — Midnight</h4><p style="color:var(--muted);font-size:13px;line-height:1.6">Marks all WAITING/CALLED tokens from previous days as EXPIRED. Resets daily token count via a single bulk JPQL @Modifying UPDATE query.</p><div class="sched-cron">0 0 0 * * *</div><div class="info" style="margin-top:10px">Uses <strong>@Modifying + @Transactional</strong> on the repository query for efficient bulk update without loading all entities.</div></div>
+  <div class="sched-card"><div style="font-size:30px;margin-bottom:12px">&#128269;</div><h4 style="margin-bottom:6px">Mark Stale as MISSED — Hourly</h4><p style="color:var(--muted);font-size:13px;line-height:1.6">CALLED tokens older than 1 hour → MISSED. WAITING tokens older than 2 hours → MISSED. Runs every hour from 8 AM to 8 PM.</p><div class="sched-cron">0 0 8-20 * * *</div></div>
+  <div class="sched-card"><div style="font-size:30px;margin-bottom:12px">&#127983;</div><h4 style="margin-bottom:6px">End-of-Day Cleanup — 9 PM</h4><p style="color:var(--muted);font-size:13px;line-height:1.6">At 9 PM, all remaining WAITING/CALLED tokens become MISSED. Office is considered closed for the day.</p><div class="sched-cron">0 0 21 * * *</div></div>
+</div>
+<div class="rbox rbox-code" style="margin-top:20px"><div class="rbox-head">&#9881; TokenScheduler.java — 3 Scheduled Methods</div><div class="rbox-body"><span class="ann">@Scheduled</span>(cron = <span class="str">"0 0 0 * * *"</span>) <span class="com">// midnight</span><br><span class="ann">@Transactional</span><br><span class="kw">public void</span> <span class="fn">expireOldTokens</span>() {<br>  tokenRepo.<span class="fn">updateExpiredTokens</span>(); <span class="com">// JPQL bulk UPDATE</span><br>}<br><br><span class="ann">@Scheduled</span>(cron = <span class="str">"0 0 8-20 * * *"</span>) <span class="com">// 8AM-8PM hourly</span><br><span class="kw">public void</span> <span class="fn">markStaleTokensAsMissed</span>() {<br>  LocalDateTime oneHourAgo = LocalDateTime.now().<span class="fn">minusHours</span>(<span class="num">1</span>);<br>  <span class="com">// CALLED older than 1h → MISSED</span><br>  <span class="com">// WAITING older than 2h → MISSED</span><br>}<br><br><span class="ann">@Scheduled</span>(cron = <span class="str">"0 0 21 * * *"</span>) <span class="com">// 9PM</span><br><span class="kw">public void</span> <span class="fn">markUnservedTokensAtClosing</span>() {<br>  <span class="com">// All WAITING/CALLED → MISSED</span><br>}</div></div>
+</div>
+
+</div><!-- end .panels -->
+<script>
+function showPanel(id, el) {
+  document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  el.classList.add("active");
+}
+
+function activateNode(nodeId) {
+  document.querySelectorAll(".arch-node").forEach(n => n.classList.remove("active-node"));
+  if (nodeId) document.getElementById(nodeId).classList.add("active-node");
+}
+
+async function animateSteps(steps, delay=600) {
+  for(let i=0;i<steps.length;i++){
+    const el=document.getElementById(steps[i]);
+    if(!el) continue;
+    el.classList.add("filter-active");
+    await new Promise(r=>setTimeout(r,delay));
+    el.classList.remove("filter-active");
+    el.classList.add("filter-pass");
+  }
+}
+
+async function simulate(type) {
+  const btns=document.querySelectorAll(".play-btn");
+  btns.forEach(b=>b.disabled=true);
+
+  if(type==="reg"){
+    document.getElementById("reg-flow").style.display="flex";
+    document.getElementById("reg-flow").style.flexDirection="column";
+    activateNode("node-frontend");
+    await new Promise(r=>setTimeout(r,400));
+    activateNode("node-auth");
+    await animateSteps(["reg-s1","reg-s2","reg-s3","reg-s4","reg-s5"],700);
+    activateNode(null);
+  }
+
+  else if(type==="login"){
+    document.getElementById("login-flow").style.display="block";
+    activateNode("node-frontend");
+    await new Promise(r=>setTimeout(r,400));
+    activateNode("node-auth");
+    await animateSteps(["login-s1","login-s2","login-s3","login-s4","login-s5","login-s6"],650);
+    activateNode(null);
+  }
+
+  else if(type==="gentoken"){
+    document.getElementById("gentoken-flow").style.display="block";
+    activateNode("node-frontend");
+    await new Promise(r=>setTimeout(r,300));
+    activateNode("node-backend");
+    await animateSteps(["gt-s1","gt-s2","gt-s3","gt-s4","gt-s5","gt-s6","gt-s7","gt-s8","gt-s9","gt-s10","gt-s11"],580);
+    activateNode("node-logger");
+    await new Promise(r=>setTimeout(r,600));
+    activateNode(null);
+  }
+
+  else if(type==="queue"){
+    document.getElementById("queue-flow").style.display="block";
+    activateNode("node-backend");
+    const viz=document.getElementById("queueViz");
+    viz.innerHTML="";
+    const tokens=[
+      {n:"#11",s:"SERVED",c:"q-served"},
+      {n:"#12",s:"WAITING",c:"q-waiting"},
+      {n:"#13",s:"WAITING",c:"q-waiting"},
+      {n:"#14 (you)",s:"WAITING",c:"q-yours"},
+      {n:"#15",s:"WAITING",c:"q-waiting"}
+    ];
+    for(let i=0;i<tokens.length;i++){
+      const t=tokens[i];
+      if(i>0){const a=document.createElement("div");a.className="q-arrow";a.textContent="→";viz.appendChild(a);}
+      await new Promise(r=>setTimeout(r,250));
+      const el=document.createElement("div");
+      el.className="q-token "+t.c;
+      el.innerHTML=t.n+"<br><small>"+t.s+"</small>";
+      viz.appendChild(el);
+    }
+    await new Promise(r=>setTimeout(r,500));
+    const sb=document.getElementById("queue-status-box");
+    sb.innerHTML=`<div class="info"><strong>Your status:</strong> Token #14 — <span class="chip chip-purple">WAITING</span> — <strong>2 people ahead</strong> — Estimated wait: <strong>2 × 15 = 30 minutes</strong>. Currently serving: #11</div>`;
+    activateNode(null);
+  }
+
+  else if(type==="callnext"){
+    document.getElementById("callnext-flow").style.display="block";
+    activateNode("node-backend");
+    await animateSteps(["cn-s1","cn-s2","cn-s3","cn-s4","cn-s5"],700);
+    const q12=document.getElementById("q12");
+    if(q12){q12.className="q-token q-called";q12.textContent="#12 CALLED";}
+    activateNode(null);
+  }
+
+  else if(type==="regstaff"){
+    document.getElementById("regstaff-flow").style.display="block";
+    activateNode("node-frontend");
+    await new Promise(r=>setTimeout(r,400));
+    activateNode("node-auth");
+    await animateSteps(["rs-s1","rs-s2","rs-s3","rs-s4"],700);
+    activateNode(null);
+  }
+
+  btns.forEach(b=>b.disabled=false);
+}
+
+async function simulateSecurity(mode) {
+  document.querySelectorAll(".play-btn").forEach(b=>b.disabled=true);
+  const steps=["sec-s1","sec-s2","sec-s3","sec-s4","sec-s5","sec-s6","sec-s7"];
+  const res=document.getElementById("sec-result");
+  res.style.display="none";
+
+  // Reset
+  steps.forEach(s=>{
+    const el=document.getElementById(s);
+    if(el){el.className="filter-step";}
+  });
+
+  activateNode("node-frontend");
+  await new Promise(r=>setTimeout(r,300));
+  activateNode("node-backend");
+
+  for(let i=0;i<steps.length;i++){
+    const el=document.getElementById(steps[i]);
+    if(!el) continue;
+    el.classList.add("filter-active");
+    await new Promise(r=>setTimeout(r,650));
+
+    if(mode==="invalid" && i===2){
+      el.classList.remove("filter-active");
+      el.classList.add("filter-deny");
+      res.style.display="block";
+      res.innerHTML=`<div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:14px;font-size:14px;color:#fca5a5;font-weight:600;">❌ 401 Unauthorized — JWT signature verification FAILED. SecurityContextHolder NOT set. Request rejected before reaching controller.</div>`;
+      document.querySelectorAll(".play-btn").forEach(b=>b.disabled=false);
+      activateNode(null);
+      return;
+    }
+    if(mode==="valid" && i===5){
+      // CITIZEN trying STAFF endpoint → stop at PreAuthorize
+      el.classList.remove("filter-active");
+      el.classList.add("filter-pass");
+      const next=document.getElementById("sec-s7");
+      if(next){next.classList.add("filter-deny");}
+      res.style.display="block";
+      res.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:8px;padding:14px;font-size:13px;color:#34d399;font-weight:600;">✅ CITIZEN accessing /api/tokens/generate-token → 200 OK — No role restriction on this endpoint</div><div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:14px;font-size:13px;color:#fca5a5;font-weight:600;">❌ CITIZEN accessing /api/tokens/call-next → 403 Forbidden — @PreAuthorize("hasRole(STAFF)") blocks it</div></div>`;
+      document.querySelectorAll(".play-btn").forEach(b=>b.disabled=false);
+      activateNode(null);
+      return;
+    }
+    el.classList.remove("filter-active");
+    el.classList.add("filter-pass");
+  }
+  document.querySelectorAll(".play-btn").forEach(b=>b.disabled=false);
+  activateNode(null);
+}
+</script>
+</body></html>
